@@ -23,3 +23,4 @@ enableEmoji: true
 #params:
   # Github Repo URL. This is used to add "Improve This Page" button
 #  gitRepo: <your site's Github repo URL>
+publishDir: docs
