@@ -1,6 +1,5 @@
 ---
 title: "星空、大地与日常的浪漫——从《恋爱小行星》说起"
-hero: /images/avater.jpg
 author: 
   name: Cloudac7
   image: /images/avater.jpg
