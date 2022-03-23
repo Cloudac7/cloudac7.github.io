@@ -1,5 +1,5 @@
 ---
-title: "Hugo Github Action 配置说明"
+title: "新时代的快乐科研：WSL2+Docker+EasyConnect+Clash"
 author: 
   name: Cloudac7
   image: /images/avater.jpg
