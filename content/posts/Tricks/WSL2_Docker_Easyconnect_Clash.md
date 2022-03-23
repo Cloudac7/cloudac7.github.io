@@ -9,8 +9,6 @@ categories:
   - 经验分享
 ---
 
-# 新时代的快乐科研：WSL2+Docker+EasyConnect+Clash
-
 新冠疫情之下，封校+实验室关闭，没有办法，只能在宿舍<del>愉快摸鱼</del>工作。由于宿舍的网是电信光纤，而非狭义的校园网，故连接到课题组集群尚需要使用EasyConnect VPN。众所周知，EasyConnect是一款流氓软件，并且WSL2的流量无法通过前者代理，因而需要另寻道路。
 
 ## 开端：WSL2+Docker

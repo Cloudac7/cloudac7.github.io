@@ -9,8 +9,6 @@ categories:
   - 经验分享
 ---
 
-# Hugo Github Action 配置说明
-
 ## 前置准备
 
 既然已经找到这里，应该已经知道如何用 Hugo 构建 Blog 页面，并可能已经了解 [Github Pages](https://docs.github.com/en/pages)。因此这里不在介绍 Hugo，如有需要请参考[官方文档](https://gohugo.io/)。
