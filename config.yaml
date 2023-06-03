@@ -20,7 +20,32 @@ markup:
 enableEmoji: true
 
 # Custom parameters
-#params:
-  # Github Repo URL. This is used to add "Improve This Page" button
-#  gitRepo: <your site's Github repo URL>
-#publishDir: docs
+params:
+  gitRepo: https://github.com/cloudac7/cloudac7.github.io
+
+  darkMode:
+    provider: darkreader
+    enable: true
+    default: system
+  
+  features:
+    # Enable and configure blog posts
+    blog:
+      enable: true
+      shareButtons:
+        twitter: true
+        reddit: true
+        email: true
+    comment:
+      enable: true
+      disqus:
+        shortName: cloudac7-github-io
+  
+  # specify whether you want to show Table of Contents in reading page
+  enableTOC: true
+
+  # Show tags under the post title
+  enableTags: true
+
+  # Specify whether to show flag in the language selector. Default is true.
+  showFlags: true
