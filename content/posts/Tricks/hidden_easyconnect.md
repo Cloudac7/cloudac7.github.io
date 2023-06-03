@@ -2,8 +2,6 @@
 title: "隐秘的角落：MacOS下封印EasyConnect的权宜之计"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
-hero: https://s2.loli.net/2023/04/12/A81ycq9Hn3Vfgwo.png
 date: 2023-04-12
 categories:
   - 代码

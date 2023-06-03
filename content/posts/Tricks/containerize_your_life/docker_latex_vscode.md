@@ -2,8 +2,6 @@
 title: "Containerize Your Life: 容器化LaTeX环境助力论文写作"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
-hero: /images/heroes/container.jpg
 date: 2023-06-03
 categories:
   - 代码

@@ -2,7 +2,6 @@
 title: "酷炫终端Banner生成方法"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
 date: 2023-05-15
 categories:
   - 代码

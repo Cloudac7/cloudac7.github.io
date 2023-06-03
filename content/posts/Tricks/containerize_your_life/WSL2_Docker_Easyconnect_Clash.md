@@ -2,8 +2,6 @@
 title: "新时代的快乐科研：WSL2+Docker+EasyConnect+Clash"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
-hero: /images/heroes/container.jpg
 date: 2022-03-23
 categories:
   - 代码

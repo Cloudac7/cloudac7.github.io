@@ -2,7 +2,7 @@
 title: "DeePMD-kit安装实战全记录"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
+
 date: 2019-11-01
 categories:
   - DeePMD

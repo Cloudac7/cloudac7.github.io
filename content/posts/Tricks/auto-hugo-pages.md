@@ -2,7 +2,7 @@
 title: "Hugo Github Action 配置说明"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
+
 date: 2021-07-08
 categories:
   - 代码

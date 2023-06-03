@@ -21,6 +21,7 @@ enableEmoji: true
 
 # Custom parameters
 params:
+  background: /images/background.jpg
   gitRepo: https://github.com/cloudac7/cloudac7.github.io
 
   darkMode:
