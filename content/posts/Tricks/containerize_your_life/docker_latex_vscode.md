@@ -3,7 +3,7 @@ title: "Containerize Your Life: 容器化LaTeX环境助力论文写作"
 author: 
   name: Cloudac7
   image: /images/avater.jpg
-  hero: /images/heroes/container.jpg
+hero: /images/heroes/container.jpg
 date: 2023-06-03
 categories:
   - 代码
@@ -12,7 +12,9 @@ categories:
 ---
 
 > 容器化拯救世界。——沃兹基硕德
+> 
 > 本文是 Containerize Your Life 系列的第2篇博文。
+> 
 > 这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。
 
 没有什么比在一台全新的PC上安装TeXLive更加令人焦躁了。硕大的安装镜像、众多的宏包、令人眼花缭乱的参数设置……

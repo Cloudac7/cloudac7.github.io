@@ -3,7 +3,7 @@ title: "云之彼端"
 author: 
   name: Cloudac7
   image: /images/avater.jpg
-  hero: /images/heroes/hbr_31a.jpg
+hero: /images/heroes/hbr_31a.jpg
 date: 2021-07-08
 weight: 1
 categories:
