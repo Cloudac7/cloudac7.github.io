@@ -2,12 +2,17 @@
 title: "新时代的快乐科研：WSL2+Docker+EasyConnect+Clash"
 author: 
   name: Cloudac7
-  image: /images/avater.jpg
+  image: images/container.jpg
 date: 2022-03-23
 categories:
   - 代码
   - 经验分享
+  - Containerize Your Life
 ---
+
+> 容器化拯救世界。——沃兹基硕德
+> 本文是 Containerize Your Life 系列的第1篇博文。
+> 这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。
 
 新冠疫情之下，封校+实验室关闭，没有办法，只能在宿舍<del>愉快摸鱼</del>工作。由于宿舍的网是电信光纤，而非狭义的校园网，故连接到课题组集群尚需要使用EasyConnect VPN。众所周知，EasyConnect是一款流氓软件，并且WSL2的流量无法通过前者代理，因而需要另寻道路。
 
