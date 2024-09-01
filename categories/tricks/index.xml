@@ -1,0 +1,1759 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tricks on Mira &amp; Ao</title><link>https://cloudac7.github.io/categories/tricks/</link><description>Recent content in Tricks on Mira &amp; Ao</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 05 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://cloudac7.github.io/categories/tricks/index.xml" rel="self" type="application/rss+xml"/><item><title>利用Slurm管理NVIDIA MIG实例</title><link>https://cloudac7.github.io/p/%E5%88%A9%E7%94%A8slurm%E7%AE%A1%E7%90%86nvidia-mig%E5%AE%9E%E4%BE%8B/</link><pubDate>Fri, 05 Jul 2024 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E5%88%A9%E7%94%A8slurm%E7%AE%A1%E7%90%86nvidia-mig%E5%AE%9E%E4%BE%8B/</guid><description>&lt;p>可能有人看到这个标题便会有疑问，照理说 Slurm 21.08 以上已经提供了 MIG 支持，只要按照&lt;a class="link" href="https://slurm.schedmd.com/gres.html#MIG_Management" target="_blank" rel="noopener"
+>官方文档&lt;/a>上的指引便可以正确运行。&lt;/p>
+&lt;p>但情况并没有这么简单，因为官方文档中提到的 &lt;code>AutoDetect=nvml&lt;/code> 特性实际上需要在配置/编译 Slurm 时确保 &lt;code>--with-nvml&lt;/code> 特性开启，且需要正确安装 NVML 库来支持。
+由于 Slurm 通常是集群建设时由厂商工程师部署，往往并没有编译这一特性支持。于是要想开启这一功能，我们需要对 Slurm 进行重新编译或寻找满足要求的二进制包……&lt;/p>
+&lt;p>作为一个简单的 Work Around，本文自然未打算对这个情况进行说明。因此我们退而求其次，选择并非基于 &lt;code>AutoDetect=nvml&lt;/code> 的方案，即手动配置。&lt;/p>
+&lt;p>若要人工配置 MIG 硬件，我们需要在 Slurm 的 &lt;code>gres.conf&lt;/code> 中写入 MIG 对应的硬件挂载路径。根据官方文档，每一个 MIG 实例都挂载为一个 &lt;code>/dev/nvidia-caps/nvidia-cap*&lt;/code> 设备，则通过指定这些路径便可以正确配置硬件信息。&lt;/p>
+&lt;p>这里我们先事先创建好 MIG 实例，例如在开启了 MIG 特性支持的 2 和 3 号 GPU 上通过运行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">sudo nvidia-smi mig -i 2,3 -cgi 19,19,19,19,19,19,19 -C
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>便可以创建 14 个显存大小约 10G 的 GPU 计算实例，通过 &lt;code>nvidia-smi&lt;/code> 可以看到：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;span class="lnt">49
+&lt;/span>&lt;span class="lnt">50
+&lt;/span>&lt;span class="lnt">51
+&lt;/span>&lt;span class="lnt">52
+&lt;/span>&lt;span class="lnt">53
+&lt;/span>&lt;span class="lnt">54
+&lt;/span>&lt;span class="lnt">55
+&lt;/span>&lt;span class="lnt">56
+&lt;/span>&lt;span class="lnt">57
+&lt;/span>&lt;span class="lnt">58
+&lt;/span>&lt;span class="lnt">59
+&lt;/span>&lt;span class="lnt">60
+&lt;/span>&lt;span class="lnt">61
+&lt;/span>&lt;span class="lnt">62
+&lt;/span>&lt;span class="lnt">63
+&lt;/span>&lt;span class="lnt">64
+&lt;/span>&lt;span class="lnt">65
+&lt;/span>&lt;span class="lnt">66
+&lt;/span>&lt;span class="lnt">67
+&lt;/span>&lt;span class="lnt">68
+&lt;/span>&lt;span class="lnt">69
+&lt;/span>&lt;span class="lnt">70
+&lt;/span>&lt;span class="lnt">71
+&lt;/span>&lt;span class="lnt">72
+&lt;/span>&lt;span class="lnt">73
+&lt;/span>&lt;span class="lnt">74
+&lt;/span>&lt;span class="lnt">75
+&lt;/span>&lt;span class="lnt">76
+&lt;/span>&lt;span class="lnt">77
+&lt;/span>&lt;span class="lnt">78
+&lt;/span>&lt;span class="lnt">79
+&lt;/span>&lt;span class="lnt">80
+&lt;/span>&lt;span class="lnt">81
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| NVIDIA-SMI 535.129.03 Driver Version: 535.129.03 CUDA Version: 12.2 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU Name Persistence-M | Bus-Id Disp.A | Volatile Uncorr. ECC |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| Fan Temp Perf Pwr:Usage/Cap | Memory-Usage | GPU-Util Compute M. |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | MIG M. |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|=========================================+======================+======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 0 NVIDIA A100 80GB PCIe Off | 00000000:17:00.0 Off | 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 46C P0 63W / 300W | 4MiB / 81920MiB | 0% Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Disabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 1 NVIDIA A100 80GB PCIe Off | 00000000:65:00.0 Off | 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 50C P0 76W / 300W | 4MiB / 81920MiB | 0% Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Disabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 NVIDIA A100 80GB PCIe Off | 00000000:CA:00.0 Off | On |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 46C P0 64W / 300W | 87MiB / 81920MiB | N/A Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Enabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 NVIDIA A100 80GB PCIe Off | 00000000:E3:00.0 Off | On |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 49C P0 73W / 300W | 87MiB / 81920MiB | N/A Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Enabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| MIG devices: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI MIG | Memory-Usage | Vol| Shared |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Dev | BAR1-Usage | SM Unc| CE ENC DEC OFA JPG |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | ECC| |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|==================+================================+===========+=======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 8 0 1 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 9 0 2 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 10 0 3 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 11 0 4 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 12 0 5 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 13 0 6 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 8 0 1 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 9 0 2 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 11 0 3 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 12 0 4 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 13 0 5 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 14 0 6 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| Processes: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI PID Type Process name GPU Memory |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Usage |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|=======================================================================================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| No running processes found |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但若使用 &lt;code>ls -1 /dev/nvidia-caps/nvidia-cap*&lt;/code> 去查询挂载路径，就会发现下面给出的项目可能会远远多于我们实际创建的 MIG 实例数量。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap336
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap337
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap345
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap346
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap354
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap363
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap364
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap372
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap373
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap381
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap382
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap390
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap391
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap471
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap472
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap480
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap481
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap489
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap490
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap507
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap508
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap516
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap517
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap525
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap526
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap534
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap535
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>实际上上面的路径数量足足有 32 个，显然我们只有 14 个 GPU 实例。于是陷入僵局，到底哪些路径是可用的呢？&lt;/p>
+&lt;p>这里我们参考了&lt;a class="link" href="https://medium.com/nttlabs/nvidia-a100-mig-as-linux-device-66220ca16698" target="_blank" rel="noopener"
+>这篇博客&lt;/a>的思路，从中找到真正发挥作用的设备。&lt;/p>
+&lt;p>文中提到，通过开启 A100 的 DEVFS 模式，便可以通过 &lt;code>/dev&lt;/code> 来指定对应的 MIG 实例。当然由于我们的驱动远远高于 450 版本，故已经默认开启了 DEVFS 模式。
+此时，若运行以下命令，我们便令 &lt;code>migconfig&lt;/code> 和 &lt;code>migmonitor&lt;/code> 生效。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">nvidia-modprobe \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -f /proc/driver/nvidia/capabilities/mig/config \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -f /proc/driver/nvidia/capabilities/mig/monitor
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这样，当创建实例时，我们便可以从 &lt;code>/proc/driver/nvidia-caps/mig-minors&lt;/code> 中得到创建的 MIG 实例所对应的的设备编号，查询的方式便是 &lt;code>gpu&amp;lt;gpu id&amp;gt;/gi&amp;lt;gpu instance id&amp;gt;/ci&amp;lt;compute instance id&amp;gt;&lt;/code>。&lt;/p>
+&lt;p>例如对上面的 &lt;code>nvidia-smi&lt;/code> 输出中的第一个设备：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| MIG devices: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI MIG | Memory-Usage | Vol| Shared |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Dev | BAR1-Usage | SM Unc| CE ENC DEC OFA JPG |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | ECC| |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|==================+================================+===========+=======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>即在 GPU2 上创建的 7 号实例对应的编号 (GPU:2, GI: 7, CI: 0)，即可：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">cat /proc/driver/nvidia-caps/mig-minors &lt;span class="p">|&lt;/span> grep &lt;span class="s2">&amp;#34;gpu2/gi7/ci0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">gpu2/gi7/ci0 &lt;span class="m">337&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>即 &lt;code>/dev/nvidia-caps/nvidia-cap/nvidia-cap337&lt;/code>。&lt;/p>
+&lt;p>通过类似的操作我们便可以得到每个 MIG 实例所对应的挂载路径，从而可以在 &lt;code>gres.conf&lt;/code> 中写入类似于以下的行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"># 未开启 MIG 的
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 Name=gpu Type=a100 File=/dev/nvidia[0,1]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 Name=gpu Type=1g.10gb File=/dev/nvidia-caps/nvidia-cap[337,346,355,364,373,382,391,472,481,490,508,517,526,535]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后我们便可将这些设备配置到所需的队列中并用 &lt;code>--gres&lt;/code> 来进行指定，例如在 &lt;code>slurm.conf&lt;/code> 中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"># node, gres
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">GresTypes=gpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 CPUs=64 Sockets=2 CoresPerSocket=16 ThreadsPerCore=2 RealMemory=515275 Gres=gpu:a100:2,gpu:1g.10gb:14
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"># gpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">PartitionName=gpu2 MaxTime=INFINITE Nodes=c51-g002 State=UP
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>当然如果想要用一行命令直接得到Node配置，可以参考以下的写法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 获取 MIG 设备的 cap 编号&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">get_cap_numbers&lt;span class="o">()&lt;/span> &lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> sudo nvidia-smi mig -lci &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> /^[|][ ]+[0-9]/ {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> gsub(/^[|]/, &amp;#34;&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> gsub(/[ ]+/, &amp;#34; &amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> split($0, a, &amp;#34; &amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> printf &amp;#34;gpu%s/gi%s/ci%s\n&amp;#34;, a[1], a[2], a[5]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> }&amp;#39;&lt;/span> &lt;span class="p">|&lt;/span> &lt;span class="k">while&lt;/span> &lt;span class="nb">read&lt;/span> mig_instance&lt;span class="p">;&lt;/span> &lt;span class="k">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> grep &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="nv">$mig_instance&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> /proc/driver/nvidia-caps/mig-minors &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;{print $NF}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">done&lt;/span> &lt;span class="p">|&lt;/span> sort -n &lt;span class="p">|&lt;/span> uniq &lt;span class="p">|&lt;/span> paste -sd,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 打印新的 GPU 配置&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;NodeName=c51-g002 Name=gpu Type=1g.10gb File=/dev/nvidia-caps/nvidia-cap[&lt;/span>&lt;span class="k">$(&lt;/span>get_cap_numbers&lt;span class="k">)&lt;/span>&lt;span class="s2">]&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item><item><title>joblib: 简单易懂的平行世界</title><link>https://cloudac7.github.io/p/joblib-%E7%AE%80%E5%8D%95%E6%98%93%E6%87%82%E7%9A%84%E5%B9%B3%E8%A1%8C%E4%B8%96%E7%95%8C/</link><pubDate>Thu, 15 Jun 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/joblib-%E7%AE%80%E5%8D%95%E6%98%93%E6%87%82%E7%9A%84%E5%B9%B3%E8%A1%8C%E4%B8%96%E7%95%8C/</guid><description>&lt;p>Joblib是一款轻量级的Python工作流实现，可以简单快速地把相互独立的循环并行起来，从而节省时间。&lt;/p>
+&lt;h2 id="安装">安装&lt;/h2>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pip install joblib
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="使用方法">使用方法&lt;/h2>
+&lt;p>以打印出0-9的平方根为例，如果采用直接循环方法，我们可以很简单地写出如下代码。这里用 &lt;code>sleep&lt;/code> 来模拟任务本身的延迟：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">from math import sqrt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">from &lt;span class="nb">time&lt;/span> import sleep
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">from datetime import datetime
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> i in range&lt;span class="o">(&lt;/span>10&lt;span class="o">)&lt;/span>:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> print&lt;span class="o">(&lt;/span>datetime.now&lt;span class="o">()&lt;/span>, sqrt&lt;span class="o">(&lt;/span>i&lt;span class="o">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> sleep&lt;span class="o">(&lt;/span>1&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>输出如下，可见是每秒吐出一个值：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:01.200605 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:02.203232 1.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:03.207490 1.4142135623730951
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:04.211349 1.7320508075688772
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:05.211646 2.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:06.215645 2.23606797749979
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:07.218109 2.449489742783178
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:08.220789 2.6457513110645907
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:09.225884 2.8284271247461903
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:02:10.229875 3.0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>若利用 &lt;code>joblib.Parallel&lt;/code>，将循环体写成函数，并把结果作为返回值，则可改写如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">math&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">sqrt&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">time&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">sleep&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">datetime&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">datetime&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">joblib&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">Parallel&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">delayed&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">func&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">result&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">sqrt&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">datetime&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">now&lt;/span>&lt;span class="p">(),&lt;/span> &lt;span class="n">result&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">sleep&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">result&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Parallel&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">n_jobs&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">)(&lt;/span>&lt;span class="n">delayed&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">func&lt;/span>&lt;span class="p">)(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="nb">range&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">10&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>可以看到输出如下，由于 &lt;code>n_jobs&lt;/code> 设置为2，故每次有2个worker同时运行，每秒得到两个输出：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:45.843004 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:45.873286 1.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:46.864319 1.4142135623730951
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:46.891164 1.7320508075688772
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:47.871781 2.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:47.896673 2.23606797749979
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:48.875107 2.449489742783178
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:48.902218 2.6457513110645907
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:49.880168 2.8284271247461903
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2023-06-15 11:07:49.907760 3.0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>且最终返回值以一个列表形式列出：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="p">[&lt;/span>&lt;span class="mf">0.0&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">1.0&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">1.4142135623730951&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">1.7320508075688772&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">2.0&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">2.23606797749979&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">2.449489742783178&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">2.6457513110645907&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">2.8284271247461903&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="mf">3.0&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>可见上述代码的效果等价于如下的列表生成式:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="p">[&lt;/span>&lt;span class="n">func&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">i&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="nb">range&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">10&lt;/span>&lt;span class="p">)]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>用这种方法，可以简单快捷地把彼此相互独立的循环体拆解成多个平行任务。当然 &lt;code>n_jobs&lt;/code> 的设置请遵循自己使用环境的情况，避免影响到其他人的使用。&lt;/p></description></item><item><title>Containerize Your Life: 容器化LaTeX环境助力论文写作</title><link>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</link><pubDate>Sat, 03 Jun 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</guid><description>&lt;img src="https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/docker.jpg" alt="Featured image of post Containerize Your Life: 容器化LaTeX环境助力论文写作" />&lt;blockquote>
+&lt;p>容器化拯救世界。——沃兹基硕德&lt;/p>
+&lt;p>本文是 Containerize Your Life 系列的第2篇博文。&lt;/p>
+&lt;p>这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。&lt;/p>
+&lt;/blockquote>
+&lt;p>没有什么比在一台全新的PC上安装TeXLive更加令人焦躁了。硕大的安装镜像、众多的宏包、令人眼花缭乱的参数设置……
+诚然目前的教程已经足够清晰，考虑到前置步骤依然需要花费一些时间，而阻挡了我们进入专心的码字环节，依然会令人心生几分无奈。
+无奈之余，毕业压力裹挟着LaTeX语法来袭，连睡梦里都是&lt;code>\section{Introduction}&lt;/code>……&lt;/p>
+&lt;p>有没有什么办法，可以让我们快速部署好TeXLive环境，直接进入写作环节呢？聪明的你看标题便一定能够想到——容器化。&lt;/p>
+&lt;h2 id="部署流程">部署流程&lt;/h2>
+&lt;p>话不多说，直接操练起来。&lt;/p>
+&lt;p>首先安装Docker，一般PC直接用&lt;a class="link" href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener"
+>Docker Desktop&lt;/a>就行，按照安装流程走完便可。&lt;/p>
+&lt;p>然后安装好本文的主角——&lt;a class="link" href="https://code.visualstudio.com/" target="_blank" rel="noopener"
+>VSCode&lt;/a>，并安装 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" target="_blank" rel="noopener"
+>Dev Container 插件&lt;/a> 和 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop" target="_blank" rel="noopener"
+>LaTeX Workshop 插件&lt;/a>、&lt;/p>
+&lt;p>创建或进入你的LaTeX项目目录。&lt;/p>
+&lt;p>然后 &lt;code>Ctrl+,&lt;/code> 进入设置 (Mac是&lt;code>⌘,&lt;/code>)。注意如果你不希望改变全局设置，请选择 &lt;code>Workspace&lt;/code> 选项卡，则以下配置仅对当前工作区生效。&lt;/p>
+&lt;p>搜索 &lt;code>Docker&lt;/code>，在左侧目录中找到 LaTeX 分类下的两个选项：&lt;code>latex-workshop.docker.enabled&lt;/code> 和 &lt;code>latex-workshop.docker.image.latex&lt;/code>。&lt;/p>
+&lt;p>根据设置的描述，这两个选项分别对应于是否启用 Docker 环境编译、选择哪个镜像导入。&lt;/p>
+&lt;p>于是我们勾选 &lt;code>latex-workshop.docker.enabled&lt;/code>，启用，然后在 &lt;code>latex-workshop.docker.image.latex&lt;/code> 的文本框中填入：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">ghcr.io/xu-cheng/texlive-full
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里我们采用了 &lt;a class="link" href="https://github.com/xu-cheng" target="_blank" rel="noopener"
+>Xu Cheng&lt;/a> 大佬维护的 &lt;a class="link" href="https://github.com/xu-cheng/latex-docker" target="_blank" rel="noopener"
+>TeXLive 容器环境&lt;/a>，后者可以提供完整的特性支持。&lt;/p>
+&lt;p>在VSCode中，按下 &lt;!-- raw HTML omitted -->Ctrl+Shift+`&lt;!-- raw HTML omitted --> 快捷键 (Mac是&lt;!-- raw HTML omitted -->⌃⇧`&lt;!-- raw HTML omitted -->) 调出终端，拉取容器：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">docker pull ghcr.io/xu-cheng/texlive-full
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>见证奇迹的时刻：编辑并保存你的&lt;code>tex&lt;/code>文件，如果没有语法错误，LaTeX Workshop会自动保存并编译，若编译成功没有报错，便可在当前目录找到编译得到的PDF。右上角按钮提供了分栏功能可以快速预览得到的PDF，从而检查是否有语法错误。&lt;/p>
+&lt;h2 id="one-more-trick-github-action">One More Trick: Github Action&lt;/h2>
+&lt;p>在当前项目的根目录创建两层目录：&lt;code>.github/workflows&lt;/code>，然后在里面创建一个 &lt;code>compile.yaml&lt;/code> 文件，定义 Github Action Workflow:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="c"># This is a basic workflow to help you get started with Actions&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Compile LaTeX&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c"># Controls when the workflow will run&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Triggers the workflow on push or pull request events but only for the main branch&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">push&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">branches&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">master ]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">pull_request&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">branches&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">master ]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Allows you to run this workflow manually from the Actions tab&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">workflow_dispatch&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c"># A workflow run is made up of one or more jobs that can run sequentially or in parallel&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">jobs&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># This workflow contains a single job called &amp;#34;build&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">build&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># The type of runner that the job will run on&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">runs-on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ubuntu-latest&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Steps represent a sequence of tasks that will be executed as part of the job&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">steps&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">actions/checkout@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">xu-cheng/latex-action@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">root_file&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main.tex&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">actions/upload-artifact@v2.2.4&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main &lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">path&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main.pdf&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if-no-files-found&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">error&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">retention-days&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">7&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>分支请根据自己的情况进行修改，注意 &lt;code>main.tex&lt;/code> 对应于你希望编译的主文件名，若为其他的，请对应修改，编译后的PDF文件名默认与之对应，所以下面的&lt;code>path&lt;/code>也请对应修改。以上Action文件默认保留7天。&lt;/p>
+&lt;p>经过以上步骤，每次对 &lt;code>master&lt;/code> 分支的提交便会触发一个编译流程，从而可以在Github Action中下载得到的文件供预览。&lt;/p></description></item><item><title>酷炫终端Banner生成方法</title><link>https://cloudac7.github.io/p/%E9%85%B7%E7%82%AB%E7%BB%88%E7%AB%AFbanner%E7%94%9F%E6%88%90%E6%96%B9%E6%B3%95/</link><pubDate>Mon, 15 May 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E9%85%B7%E7%82%AB%E7%BB%88%E7%AB%AFbanner%E7%94%9F%E6%88%90%E6%96%B9%E6%B3%95/</guid><description>&lt;p>虽然不是每个人都喜欢徒增功耗的RGB跑马灯，但不可否认装机时候很多人看到ARGB还是会走不动道，只能安慰自己性能提升200%（）&lt;/p>
+&lt;p>那么有没有办法让每天都要面对的终端也显示出彩虹跑马的效果呢？&lt;/p>
+&lt;p>这里介绍两个小工具—— &lt;code>figlet&lt;/code> 和 &lt;code>lolcat&lt;/code> ，联合运用即可得到酷炫的终端字符画。&lt;/p>
+&lt;h2 id="figlet">Figlet&lt;/h2>
+&lt;p>Figlet是一款字符画生成器，可以根据用户输入得到一个酷炫的字符画。例如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">figlet White Spell
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>可以看到输出如下：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/MlfBtaRh6CWPO75.png"
+loading="lazy"
+alt="图 4"
+>&lt;/p>
+&lt;p>而且 &lt;code>figlet&lt;/code> 可以切换字体，例如使用 &lt;code>isometric3&lt;/code> 字体，就可以得到酷炫的3D字符画&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-basic" data-lang="basic">&lt;span class="line">&lt;span class="cl">&lt;span class="o">~&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="vg">figlet&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="vg">f&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="vg">isometric3&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="vg">White&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="vg">Spell&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/jICNGuM6PAksiw9.png"
+loading="lazy"
+alt="图 3"
+>&lt;/p>
+&lt;p>更多字体请参考&lt;a class="link" href="http://www.figlet.org/examples.html" target="_blank" rel="noopener"
+>字体示例&lt;/a>，在 &lt;code>-f&lt;/code> 选项后输入相应的字体即可。&lt;/p>
+&lt;h2 id="lolcat">Lolcat&lt;/h2>
+&lt;p>有了第一步作为基础，我们就可以生成酷炫的RGB字符画了。&lt;/p>
+&lt;p>&lt;code>lolcat&lt;/code> 是一个可以在终端为标准输入显示出彩虹渐变色彩的工具，我们通过其帮助文档一窥其强大实力。&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/RacbGMQpIZyUPDV.png"
+loading="lazy"
+alt="图 1"
+>&lt;/p>
+&lt;p>可以看到 &lt;code>lolcat&lt;/code> 支持从文件或者标准输入中获取信息，那么自然地，我们想到通过管道把 &lt;code>figlet&lt;/code> 的输出传递给 &lt;code>lolcat&lt;/code> ：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">figlet White Spell &lt;span class="p">|&lt;/span> lolcat
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如图，漂亮的彩虹色🌈&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/yJOpZYEcB5kzeox.png"
+loading="lazy"
+alt="1"
+>&lt;/p>
+&lt;p>&lt;code>lolcat&lt;/code> 的色彩是随机指定的，因而每次运行可能我们都会得到不同的输出。比较不那么碰运气的做法是，我们给定一个随机种子，例如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">figlet White Spell &lt;span class="p">|&lt;/span> lolcat -S &lt;span class="m">114514&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>就可以得到如图的输出，并且这个值是固定的。对于如何调随机种子，各位应该比我更有经验（x）&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/vN1uhbEsVjHKDoq.png"
+loading="lazy"
+alt="图 6"
+>&lt;/p>
+&lt;p>加上 &lt;code>-f&lt;/code> 选项把如图的字符画导出到文本格式文件中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">figlet White Spell &lt;span class="p">|&lt;/span> lolcat -S &lt;span class="m">114514&lt;/span> -f &amp;gt; stdout.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>用Vim打开，我们就可以看到带有颜色格式的字符画了：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/YQc7zOrukRWKqEP.png"
+loading="lazy"
+alt="图 7"
+>&lt;/p>
+&lt;h2 id="导入到motd信息">导入到Motd信息&lt;/h2>
+&lt;p>自然地，我们会想到把上面这个文件里的内容全部复制粘贴到 &lt;code>/etc/motd&lt;/code> 中，从而在每次登录终端时赏心悦目。但这样的特殊字符串，我们并不能指望剪切板帮助我们搞定一切，你很可能会看到一堆乱码而不是漂亮的字符画。因此高效的做法恰恰是利用文件IO。&lt;/p>
+&lt;p>首先检查自己的发行版有没有提供这个文件，若已提供，且希望添加到每次登陆后提示信息的末尾，只需：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo cat stdout.txt &amp;gt;&amp;gt; /etc/motd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>若未提供，只需复制粘贴即可：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo cp stdout.txt /etc/motd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>则可在每次登陆到终端时看见提示信息，如图：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/05/15/2JCFbkdsMhUiWDT.png"
+loading="lazy"
+alt="图 8"
+>&lt;/p>
+&lt;p>当然你也可以选择先手动创建一个 &lt;code>/etc/motd&lt;/code> 文件，在里面添加好必要的信息，再按照上文添加的方式放置到文件末尾。同理，先复制粘贴，再在文件结尾添加需要的信息，也是可以的。&lt;/p>
+&lt;blockquote>
+&lt;p>题外话：对一些Ubuntu用户来说，可能很希望去掉系统自带的牛皮癣。这些文件没有放置在 &lt;code>/etc/motd&lt;/code> 下，而是在 &lt;code>/etc/update-motd.d/&lt;/code> 目录中。当然你也可以依样画葫芦，把字符画放在广告里（&lt;/p>
+&lt;/blockquote></description></item><item><title>隐秘的角落：MacOS下封印EasyConnect的权宜之计</title><link>https://cloudac7.github.io/p/%E9%9A%90%E7%A7%98%E7%9A%84%E8%A7%92%E8%90%BDmacos%E4%B8%8B%E5%B0%81%E5%8D%B0easyconnect%E7%9A%84%E6%9D%83%E5%AE%9C%E4%B9%8B%E8%AE%A1/</link><pubDate>Wed, 12 Apr 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E9%9A%90%E7%A7%98%E7%9A%84%E8%A7%92%E8%90%BDmacos%E4%B8%8B%E5%B0%81%E5%8D%B0easyconnect%E7%9A%84%E6%9D%83%E5%AE%9C%E4%B9%8B%E8%AE%A1/</guid><description>&lt;p>时过境迁，距离笔者撰写的&lt;a class="link" href="./WSL2_Docker_Easyconnect_Clash.md" >新时代的快乐科研：WSL2+Docker+EasyConnect+Clash&lt;/a>已经过去一年有余。虽然目前新冠已经转为乙类乙管，大学校园封闭、全员核酸的故事已经成为古老的传言，但由于一些原因，笔者目前的日常办公环境游离在校园网之外，需要依靠EasyConnect与校园网内的服务器沟通。由于觊觎MacOS无缝的编程体验很久，加上手上首发购入的小新Pro13接连出现电源、硬盘等故障，遂于去年8月趁教育优惠&lt;!-- raw HTML omitted -->外加由于新版MacBook Air发布性价比不足旧版不仅不停售而且闲鱼价格水涨船高的神秘时间点&lt;!-- raw HTML omitted -->入手了M1版本的MacBook Air。因此本文的教程针对MacOS。&lt;/p>
+&lt;p>对于EasyConnect，上一篇教程主要目的正是将其封印在Docker之下。实际上发在知乎的版本下也有观众表示不解——我直接用官方客户端不就行了吗，为什么要大费周章搞Docker。当时的原因有二，一是EasyConnect不能对通过WSL 2的流量直接进行代理，二则也是本文的目的，请参考[这个视频](&lt;a class="link" href="https://www.bilibili.com/video/BV163411Z7BD" target="_blank" rel="noopener"
+>https://www.bilibili.com/video/BV163411Z7BD&lt;/a>）。实际上我姑且相信厂商不会作恶，但作为强迫症患者，我无法接受在Apple Silicon平台常驻两个Rosetta 2转译的基于Intel架构编译的程序（&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/04/12/A81ycq9Hn3Vfgwo.png"
+loading="lazy"
+alt="除了Zotero以外全是EasyConnect.png"
+>&lt;/p>
+&lt;p>但是，基于Docker的方法不适用于Apple Silicon平台，经过实测即使是采用Arm版本构建的镜像，由于各种原因仍然无法正确通过Socks5代理。考虑到折腾的麻烦以及校园网需求的迫切性，笔者索性放弃了Docker方案。实际上XMU提供的EasyConnect路由还算干净，基本上只是把校园网网段做了代理，虽然拜此所赐文献数据库需要采用其他方法连接，但整体使用体验还算OK，除了B站、知乎等略有卡顿，其他跟不使用EC比没有很大影响，特别是Clash不受影响。&lt;/p>
+&lt;h2 id="清除开机启动项">清除开机启动项&lt;/h2>
+&lt;p>EasyMonitor和ECAgent两个进程都是开机自动运行的，作为强迫症患者，首先要做的当然是清除开机启动项。&lt;/p>
+&lt;p>那么，请在启动台中打开&lt;code>终端&lt;/code>（或者&lt;code>iTerm2&lt;/code>等等，总之是顺手的终端），输入：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo rm /Library/LaunchDaemons/com.sangfor.EasyMonitor.plist
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sudo rm /Library/LaunchAgents/com.sangfor.ECAgentProxy.plist
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如提示输入密码，请输入并回车。&lt;/p>
+&lt;h2 id="删除证书">删除证书&lt;/h2>
+&lt;p>然后请重启电脑，打开 &lt;code>钥匙串访问&lt;/code> 程序，左侧选择 &lt;code>系统&lt;/code>，右侧选择 &lt;code>证书&lt;/code>，看到 &lt;code>Sangfor Technologies Inc.&lt;/code>，右键选择删除证书即可。&lt;/p>
+&lt;p>若证书删除后不久又自动添加回来，请检查是否已经删除开机启动项并重启过。&lt;/p>
+&lt;h2 id="脚本封印">脚本封印&lt;/h2>
+&lt;p>启动编辑器编写如下脚本：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/Applications/EasyConnect.app/Contents/Resources/bin/EasyMonitor &amp;gt; /dev/null 2&amp;gt;&lt;span class="p">&amp;amp;&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="p">&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/Applications/EasyConnect.app/Contents/MacOS/EasyConnect &lt;span class="o">||&lt;/span> &lt;span class="nb">true&lt;/span> &lt;span class="c1"># &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pkill EasyMonitor
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pkill ECAgent
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pkill ECAgentProxy
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>将该文件放到 &lt;code>$PATH&lt;/code> 路径下，取一个自己喜欢的名字，例如&lt;code>easyconnect&lt;/code>。&lt;/p>
+&lt;p>如果你不知道 &lt;code>$PATH&lt;/code> 路径，请运行 &lt;code>echo $PATH&lt;/code> 查看。&lt;/p>
+&lt;h2 id="封装脚本">封装脚本&lt;/h2>
+&lt;p>每次都在终端运行命令对于需要开终端的工作流来说不算友好。但实际上，MacOS提供了一个自带的途径，可以把Shell脚本封装成App。&lt;/p>
+&lt;p>打开 &lt;code>自动操作&lt;/code> 程序，点“取消”并再次点击程序坞上的图标，即可弹出新建自动操作的窗口，点击 &lt;code>应用程序&lt;/code> 并选取。&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/04/12/UpnuokCE6x4McRX.png"
+loading="lazy"
+alt="image.png"
+>&lt;/p>
+&lt;p>搜索框中搜索Shell，选择 &lt;code>运行Shell脚本&lt;/code>，拖拽到右侧，如图：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2023/04/12/wsKHOtdxLef8hER.png"
+loading="lazy"
+alt="image.png"
+>&lt;/p>
+&lt;p>在文本框中输入上文编写的脚本路径，比如&lt;code>/Users/user/.local/bin/easyconnect&lt;/code>，点击右上角的运行测试一下能否正确弹出EasyConnect程序。若通过，&lt;code>编辑&lt;/code>-&lt;code>存储&lt;/code>，将创建的应用程序存储在Application中即可。&lt;/p>
+&lt;p>这种方式创建的App可以通过启动台直接运行，体验和直接运行EasyConnect接近，且运行前后都会自动清理EC系列进程。&lt;/p>
+&lt;h2 id="保险起见">保险起见&lt;/h2>
+&lt;p>经过实测上述方法即使通过用户权限运行，也仍然会有提权到Root的程序在后台，当然仅限于工作期间，实测并不会写入新的根证书。但作为强迫症，一个补救措施是连接成功后立即手动干掉两个进程，即：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">pkill EasyMonitor
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pkill ECAgent
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>实测二者被kill不会影响连接。&lt;/p>
+&lt;h2 id="参考文献">参考文献&lt;/h2>
+&lt;p>本文参考了众多大佬的讨论，这里一并列出表示感谢。&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;a class="link" href="https://blog.isteed.cc/post/fuck-easyconnect-on-macos/" target="_blank" rel="noopener"
+>EasyConnect 你想干甚？—— 干掉 macOS 版 EasyConnect 的流氓行为&lt;/a>
+&lt;a class="link" href="https://soulike.tech/article/64" target="_blank" rel="noopener"
+>在 macOS 上安全使用 EasyConnect&lt;/a>
+&lt;a class="link" href="https://blog.csdn.net/qq_37164975/article/details/109519155" target="_blank" rel="noopener"
+>Mac 中将脚本封装为 App&lt;/a>
+&lt;a class="link" href="https://www.v2ex.com/t/899510" target="_blank" rel="noopener"
+>macos 深信服的 easyconnect 是怎么做到自动提权到 root 的？&lt;/a>&lt;/p>
+&lt;/blockquote></description></item><item><title>新时代的快乐科研：WSL2+Docker+EasyConnect+Clash</title><link>https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/</link><pubDate>Wed, 23 Mar 2022 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/</guid><description>&lt;img src="https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/docker.jpg" alt="Featured image of post 新时代的快乐科研：WSL2+Docker+EasyConnect+Clash" />&lt;blockquote>
+&lt;p>容器化拯救世界。——沃兹基硕德&lt;/p>
+&lt;p>本文是 Containerize Your Life 系列的第1篇博文。&lt;/p>
+&lt;p>这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。&lt;/p>
+&lt;/blockquote>
+&lt;p>新冠疫情之下，封校+实验室关闭，没有办法，只能在宿舍&lt;!-- raw HTML omitted -->愉快摸鱼&lt;!-- raw HTML omitted -->工作。由于宿舍的网是电信光纤，而非狭义的校园网，故连接到课题组集群尚需要使用EasyConnect VPN。众所周知，EasyConnect是一款流氓软件，并且WSL2的流量无法通过前者代理，因而需要另寻道路。&lt;/p>
+&lt;h2 id="开端wsl2docker">开端：WSL2+Docker&lt;/h2>
+&lt;p>本文WSL运行环境：WSL2+Debian（为什么不是Ubuntu呢，我也想知道www）&lt;/p>
+&lt;p>众所周知，微软在Windows 10发布之初，便画了Windows Subsystem for Linux这个大饼，最终在2017年算是把饼端了上来。初代WSL实现了NT内核到Linux内核指令集的互转，但缺乏对更底层特性的支持，包括Docker和CUDA都无法运行，堪称官方版Cygwin。之所以想要升级到WSL2，正是因为其提供了对Docker和CUDA的完整支持。在Windows 11加持下，更是可以通过&lt;a class="link" href="https://docs.microsoft.com/en-us/windows/wsl/tutorials/gui-apps" target="_blank" rel="noopener"
+>WSLg&lt;/a>直接使用图形界面（且完整支持X11，妈妈再也不用担心我的&lt;code>$DISPLAY&lt;/code>配置写不对了）。从而在Windows 11下，可以获得接近原生Linux的完整体验（不愧是连长相都像macOS的一代）。&lt;/p>
+&lt;p>如果你仍在使用WSL1，也可以升级到WSL2。如果你的工作更多依赖本地磁盘文件而不需要更底层的应用，也可以停留在WSL1，后者对Windows分区文件读取性能更好。&lt;/p>
+&lt;p>而前文提到，WSL2的流量无法通过EasyConnect代理。一个简单的解决方案因而浮现出来，使用EasyConnect的Docker镜像来解决问题。&lt;/p>
+&lt;p>目前，&lt;a class="link" href="https://github.com/Hagb" target="_blank" rel="noopener"
+>@Hagb&lt;/a>大佬已经提供了基于EasyConnect Linux客户端封装的&lt;a class="link" href="https://github.com/Hagb/docker-easyconnect" target="_blank" rel="noopener"
+>Docker镜像&lt;/a>。以下仅作简单说明，详细使用方法请参考上述链接。&lt;/p>
+&lt;p>首先安装Docker，基本上是一键完成，因而也没有太多注意事项。安装好后记得检查下设置，确保开启了对WSL2的支持。&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2022/03/23/Ma7KlZNIGHmX3Y5.png"
+loading="lazy"
+alt="image-20220323114600926"
+>&lt;/p>
+&lt;p>一切就绪后我们就可以开始Docker人生了。首先创建配置文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">touch ~/.easyconn
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>加载容器：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">docker run -d --device /dev/net/tun --cap-add NET_ADMIN -ti -p 127.0.0.1:1080:1080 -p 127.0.0.1:8888:8888 -e &lt;span class="nv">EC_VER&lt;/span>&lt;span class="o">=&lt;/span>7.6.3 -v &lt;span class="nv">$HOME&lt;/span>/.easyconn:/root/.easyconn -e &lt;span class="nv">CLI_OPTS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;-d &amp;lt;vpn_address&amp;gt; -u &amp;lt;username&amp;gt; -p &amp;lt;password&amp;gt;&amp;#34;&lt;/span> hagb/docker-easyconnect:cli
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>注意替换&lt;code>&amp;lt;vpn_address&amp;gt;&lt;/code>，&lt;code>&amp;lt;username&amp;gt;&lt;/code>，&lt;code>&amp;lt;password&amp;gt;&lt;/code>为自己学校/单位的SSLVPN地址、用户名和密码。&lt;/p>
+&lt;p>可以在Docker Desktop中点击创建出的容器，查看一下日志（主要是检查下有没有登陆成功）。可能在几次（次数取决于运气，可能0-2）登陆失败后，终于在最下行出现了：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">user &amp;#34;&amp;lt;username&amp;gt;&amp;#34; login successfully
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>说明登陆成功，可以继续愉快玩耍了。&lt;/p>
+&lt;p>上述命令中我们映射了两组端口，分别是1080和8888，对应&lt;code>socks&lt;/code>和&lt;code>http&lt;/code>代理。接下来我们便尝试利用Socks隧道对SSH进行代理。Debian下的&lt;code>nc&lt;/code>命令似乎并不支持&lt;code>-x&lt;/code>选项，因而在百度上直接搜到的教程可能并不能奏效。因此，这里采用其他方案。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo apt update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sudo apt install connect-proxy
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后配置&lt;code>~/.ssh/config&lt;/code>，采用如下格式：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">Host &amp;lt;cluster&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> User &amp;lt;cluster_username&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Hostname &amp;lt;cluster_ip&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Port &amp;lt;cluster_port&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ProxyCommand connect-proxy -S localhost:1080 %h %p
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>请务必替换上文中信息为自己的用户名、IP、端口等。当然Hostname可以随便取。&lt;/p>
+&lt;p>然后测试一下是否可以正常连接：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ssh &amp;lt;cluster&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果看到了登陆成功信息，说明你的EasyConnect已经正确配置在WSL上。&lt;/p>
+&lt;h2 id="进阶clash配置socks定向转发">进阶：Clash配置Socks定向转发&lt;/h2>
+&lt;p>但上述方法仅适用于WSL2内部的SSH，如果需要在Windows本体使用SSH（比如VSCode的Remote，舒爽程度可谓谁用谁知道），尚且需要想办法通过Socks进行代理。同时，作为一个合格的科研人，科学的上网工具自然是必备，后者可以帮助我们合理使用404搜索引擎快速检索所需的文献。但科学上网工具很多也同样基于Socks5代理，甚至可能存在端口冲突（不少客户端默认使用1080端口）。&lt;/p>
+&lt;p>Clash作为功能强大的多平台代理客户端，可以方便地解决Socks代理问题。&lt;/p>
+&lt;p>首先安装Clash客户端（如果有的话跳过此步）。&lt;/p>
+&lt;p>运行，点击&lt;code>config.yaml&lt;/code>右侧的&lt;code>&amp;lt;&amp;gt;&lt;/code>，进入规则编辑。&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2022/03/23/45q3OJh8UCft1yG.png"
+loading="lazy"
+alt="image-20220323121155764"
+>&lt;/p>
+&lt;p>在配置文件中，添加以下代理组（放置在&lt;code>proxies&lt;/code>下）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">proxies&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;vpn1&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">type&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">socks5&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">server&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">127.0.0.1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里的端口是我们上文映射的1080端口。Clash默认采用7890端口，故其他代理不会与之冲突。&lt;/p>
+&lt;p>然后在规则组中添加以下条目：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">rules&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">IP-CIDR,xxx.xxx.xxx.0/24,vpn1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">IP-CIDR,xxx.xxx.xxx.xxx/32,vpn1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里的写法请参考[CIDR转换表](&lt;a class="link" href="https://techlibrary.hpe.com/docs/otlink-wo/CIDR-Conversion-Table.html" target="_blank" rel="noopener"
+>CIDR Conversion Table | HPE Edgeline Docs&lt;/a>)。第一行表示&lt;code>xxx.xxx.xxx.1&lt;/code>直到&lt;code>xxx.xxx.xxx.254&lt;/code>的所有IP，第二行则表示只包括&lt;code>xxx.xxx.xxx.xxx&lt;/code>这一个IP地址。注意这里的&lt;code>vpn1&lt;/code>对应&lt;code>proxies&lt;/code>中的&lt;code>name&lt;/code>字段。&lt;/p>
+&lt;p>保存，如果没有报错说明正确。然后检查需要校园网权限的网站，若可以访问，说明配置成功。&lt;/p>
+&lt;p>但聪明的你可能已经发现，PowerShell下的SSH还是没走代理啊？&lt;/p>
+&lt;p>是的，我们还需要额外一步：开启TUN模式。这样CFW可以接管非系统代理应用的流量。&lt;/p>
+&lt;p>详细步骤请参考&lt;a class="link" href="https://docs.cfw.lbyczf.com/contents/tun.html" target="_blank" rel="noopener"
+>官方文档&lt;/a>，对0.19.0以上版本，只需进行以下两步：&lt;/p>
+&lt;blockquote>
+&lt;ol>
+&lt;li>点击&lt;code>General&lt;/code>中&lt;code>Service Mode&lt;/code>右边&lt;code>Manage&lt;/code>，在打开窗口中安装服务模式，安装完成应用会自动重启，Service Mode 右边地球图标变为&lt;code>绿色&lt;/code>即安装成功（无法安装参考：&lt;a class="link" href="https://docs.cfw.lbyczf.com/contents/questions.html#service-mode-%e6%97%a0%e6%b3%95%e5%ae%89%e8%a3%85-windows" target="_blank" rel="noopener"
+>这里&lt;/a>）&lt;/li>
+&lt;li>点击&lt;code>General&lt;/code>中&lt;code>TUN Mode&lt;/code>右边开关启动 TUN 模式&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;p>接下来就是见证奇迹的时刻。打开PowerShell，直接输入ssh命令登陆校园网集群，便可以登陆成功，且在Clash的Connecting选项卡可以看到对应的连接。打开VSCode，直接开启Remote，也可以正确识别。&lt;/p>
+&lt;p>到这里，我们已经顺利完成了WSL2+Docker+EasyConnect+Clash的全工具链配置。还愣着干啥，赶紧摸🐟啊（x）&lt;/p>
+&lt;h2 id="xmu特供并不万能的sslvpn">XMU特供：并不万能的SSLVPN&lt;/h2>
+&lt;p>对其他学校的同学们，看到这里可以关掉了。&lt;!-- raw HTML omitted -->因为我也不知道后面的该怎么写了（x）&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;p>但是对于XMU的同学们来说，似乎还差了点什么。没错，就是CNKI。&lt;/p>
+&lt;p>非常遗憾，XMU的SSLVPN只能支持校内IP的代理，换言之包括CNKI和各大期刊的网站，都只能用WebVPN访问。&lt;/p>
+&lt;p>因此上文中我只配置了课题组的几个IP，而没有做更进一步的设置。&lt;/p>
+&lt;p>好在，&lt;a class="link" href="https://github.com/spencerwooo" target="_blank" rel="noopener"
+>@spencerwoo&lt;/a>大佬制作了一个&lt;a class="link" href="https://webvpn.vercel.app/" target="_blank" rel="noopener"
+>网站&lt;/a>并&lt;a class="link" href="https://github.com/spencerwooo/bit-webvpn-converter" target="_blank" rel="noopener"
+>开源&lt;/a>，可以转换任意网址到BIT的WebVPN。因此我Fork了原仓库并&lt;a class="link" href="https://github.com/Cloudac7/xmu-webvpn-converter" target="_blank" rel="noopener"
+>依样画葫芦&lt;/a>，制作了适用于XMU的版本——&lt;a class="link" href="https://cloudac7.github.io/xmu-webvpn-converter/" target="_blank" rel="noopener"
+>XMU WEBVPN Converter&lt;/a>，托管到Github Pages上。&lt;/p>
+&lt;p>使用方法非常简单，只需在Original URL中输入原始链接，点击中间的绿色按钮，即可在下方得到转换后的链接。可以选择打开或者复制。&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2022/03/23/a8NlfuSbjLzd674.png"
+loading="lazy"
+alt="image-20220323123951006"
+>&lt;/p>
+&lt;p>拜其所赐，我可以直接使用404学术搜索，然后把链接粘贴到这里获取WebVPN地址并访问、下载原始文献。&lt;/p>
+&lt;p>妈妈再也不用担心导师在微信群发文献链接了（笑）&lt;/p>
+&lt;p>以上，开启疫情下的快乐科研吧♥&lt;/p></description></item><item><title>Hugo Github Action 配置说明</title><link>https://cloudac7.github.io/p/hugo-github-action-%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/</link><pubDate>Thu, 08 Jul 2021 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/hugo-github-action-%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E/</guid><description>&lt;h2 id="前置准备">前置准备&lt;/h2>
+&lt;p>既然已经找到这里，应该已经知道如何用 Hugo 构建 Blog 页面，并可能已经了解 &lt;a class="link" href="https://docs.github.com/en/pages" target="_blank" rel="noopener"
+>Github Pages&lt;/a>。因此这里不在介绍 Hugo，如有需要请参考&lt;a class="link" href="https://gohugo.io/" target="_blank" rel="noopener"
+>官方文档&lt;/a>。&lt;/p>
+&lt;p>要想使用 Github Pages 构建静态网站，需要把相关代码放在 Github 仓库，命名为 &lt;code>&amp;lt;username/organization&amp;gt;.github.io&lt;/code>。为便于说明，假设用户名为 &lt;code>mira&lt;/code>。则仓库主分支目录结构大致如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">mira.github.io
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">├── archetypes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">├── config.yaml
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">├── content
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">├── data
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">├── static
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">└── themes
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="创建-ssh-deploy-key">创建 SSH Deploy Key&lt;/h2>
+&lt;p>详情请参考&lt;a class="link" href="https://github.com/marketplace/actions/github-pages-action#%EF%B8%8F-create-ssh-deploy-key" target="_blank" rel="noopener"
+>文档说明&lt;/a>。&lt;/p>
+&lt;p>在终端中（Windows可在git-scm终端）创建所需的密钥：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ssh-keygen -t rsa -b &lt;span class="m">4096&lt;/span> -C &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="k">$(&lt;/span>git config user.email&lt;span class="k">)&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> -f gh-pages -N &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># You will get 2 files:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># gh-pages.pub (public key)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># gh-pages (private key)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在仓库页面选择 Settings 标签，从左侧进入 Deploy Keys 设置，添加新的公钥，将公钥（&lt;code>gh-pages.pub&lt;/code>）复制粘贴到 Key 框中，勾选下方的 &amp;ldquo;Allow write access&amp;rdquo;，点击 Save 保存。&lt;/p>
+&lt;p>点击左侧的 Secrets， 创建新的密钥，命名为 &lt;code>ACTIONS_DEPLOY_KEY&lt;/code> 并将密钥（&lt;code>gh-pages&lt;/code>）粘贴到下方框中，点击 Save 保存。&lt;/p>
+&lt;h2 id="创建-workflow">创建 Workflow&lt;/h2>
+&lt;p>在仓库页面点击 Actions 标签，创建新的工作流（注意选择 set up a workflow yourself），路径为&lt;code>.github/workflows/gh-pages.yml&lt;/code>，输入以下内容以创建配置文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">github pages&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">push&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">branches&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">main &lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Set a branch to deploy&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">pull_request&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">jobs&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">deploy&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">runs-on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ubuntu-20.04&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">steps&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">actions/checkout@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">submodules&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Fetch Hugo themes (true OR recursive)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">fetch-depth&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">0&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Fetch all history for .GitInfo and .Lastmod&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Setup Hugo&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">peaceiris/actions-hugo@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">hugo-version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;latest&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># extended: true&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Build&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">run&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">hugo --minify&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Deploy&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">peaceiris/actions-gh-pages@v3&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">github.ref == &amp;#39;refs/heads/main&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">github_token&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">${{ secrets.GITHUB_TOKEN }}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">publish_dir&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">./public&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>其中&lt;code>main&lt;/code>分支为仓库主分支，若为 &lt;code>master&lt;/code> 请手动替换。Workflow 默认选择创建 &lt;code>gh-pages&lt;/code> 分支用于存放 Github Pages 所需文件，默认编译在 &lt;code>public&lt;/code> 目录下并提交到该分支。若要更改此分支名，需要在&lt;code>Deploy&lt;/code>部分指定：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Deploy&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">peaceiris/actions-gh-pages@v3&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">github_token&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">${{ secrets.GITHUB_TOKEN }}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">publish_branch: your-branch # default&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">gh-pages&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>更多设置请参考 &lt;a class="link" href="https://github.com/marketplace/actions/hugo-setup" target="_blank" rel="noopener"
+>actions-hugo&lt;/a> 和 &lt;a class="link" href="https://github.com/marketplace/actions/github-pages-action" target="_blank" rel="noopener"
+>actions-gh-pages&lt;/a>。&lt;/p>
+&lt;h2 id="设置分支">设置分支&lt;/h2>
+&lt;p>实际上在工作流配置文件提交后，若 Workflow 建立成功，即可自动开启编译。但此时 Pages 仍然不可访问，原因是第一次编译后需要设置 Pages 分支到 &lt;code>gh-pages&lt;/code>。请进入 Settings 中，并向下滚动到 GitHub Pages 设置项配置即可。生效一段时间后，即可访问 &lt;code>http(s)://&amp;lt;username/organization&amp;gt;.github.io&lt;/code>。&lt;/p></description></item><item><title>DeePMD-kit安装实战全记录</title><link>https://cloudac7.github.io/p/deepmd-kit%E5%AE%89%E8%A3%85%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/</link><pubDate>Fri, 01 Nov 2019 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/deepmd-kit%E5%AE%89%E8%A3%85%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/</guid><description>&lt;img src="https://cloudac7.github.io/p/deepmd-kit%E5%AE%89%E8%A3%85%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/cover.jpg" alt="Featured image of post DeePMD-kit安装实战全记录" />&lt;p>本次安装的GPU集群无法与外界联网，只有无GPU的管理节点可以使用，故安装过程与官方教程稍有不同。
+这里假设远程通过module管理必要的环境，并已经预置了Cuda 9.2和gcc 4.9.4。&lt;/p>
+&lt;h2 id="准备工作">准备工作&lt;/h2>
+&lt;p>首先准备必要的依赖。&lt;/p>
+&lt;p>检查可用的模块，并加载必要的模块：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">module avail
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">module add cuda/9.2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">module add gcc/4.9.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"># gcc&amp;gt;=4.9 required by dp_ipi, or it won&amp;#39;t be built.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"># For gcc-8.3 could not be supported, here we select a lower version.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>本教程推荐使用conda虚拟环境安装，故：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">module add miniconda/3.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">conda create -n deepmd python=3.6
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">conda activate deepmd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>下载并编译nccl：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd /some/nccl_install_path
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">git clone https://github.com/NVIDIA/nccl.git -b v2.4.8-1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cd nccl
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make -j src.build --prefix=&amp;#34;/some/local/path&amp;#34; NVCC_GENCODE=&amp;#34;-gencode=arch=compute_70,code=sm_70&amp;#34;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>由于GPU节点不能直接联网，故使用登陆节点进行编译效率较高，但由于缺少必要的依赖&lt;code>libcuda.so&lt;/code>和&lt;code>libcuda.so.1&lt;/code>（包含在GPU驱动中，登陆节点未安装），故采用stubs所带的库编译，并手动加入环境变量。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">ln&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">s&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">9.2&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib64&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">stubs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libcuda&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">so&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">some&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">local&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libcuda&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">so&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">export&lt;/span> &lt;span class="n">LD_LIBRARY_PATH&lt;/span>&lt;span class="o">=$&lt;/span>&lt;span class="n">LD_LIBRARY_PATH&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">9.2&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib64&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">stubs&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">some&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">local&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">path&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在某个想要的路径下将tensorflow-1.12版本的源代码下载好：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd /some/workspace
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">git clone https://github.com/tensorflow/tensorflow tensorflow -b r1.12 --depth=1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>下载好bazel安装包并运行，将所需的环境加入环境变量：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">wget&lt;/span> &lt;span class="n">https&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">//&lt;/span>&lt;span class="n">github&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bazelbuild&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bazel&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">releases&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">download&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">0.15&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mf">0.15&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">installer&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">linux&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">x86_64&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">chmod&lt;/span> &lt;span class="o">+&lt;/span>&lt;span class="n">x&lt;/span> &lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mf">0.15&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">installer&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">linux&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">x86_64&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">./&lt;/span>&lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mf">0.15&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">installer&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">linux&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">x86_64&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">user&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">export&lt;/span> &lt;span class="n">PATH&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;$PATH:$HOME/bin&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="tensorflow编译">tensorflow编译&lt;/h2>
+&lt;p>首先配置tensorflow的编译选项：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd tensorflow/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">./configure
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>根据需要，提供正确的组件和路径：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">location&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">python&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">xxx&lt;/span>&lt;span class="p">]:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Found&lt;/span> &lt;span class="n">possible&lt;/span> &lt;span class="n">Python&lt;/span> &lt;span class="n">library&lt;/span> &lt;span class="n">paths&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="o">/&lt;/span>&lt;span class="n">xxx&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">python3&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">site&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">packages&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">input&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">desired&lt;/span> &lt;span class="n">Python&lt;/span> &lt;span class="n">library&lt;/span> &lt;span class="n">path&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">xxx&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">python3&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">site&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">packages&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">Apache&lt;/span> &lt;span class="n">Ignite&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">n&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">Y&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">XLA&lt;/span> &lt;span class="n">JIT&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">n&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">Y&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">OpenCL&lt;/span> &lt;span class="n">SYCL&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">ROCm&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">CUDA&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">Y&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">CUDA&lt;/span> &lt;span class="n">SDK&lt;/span> &lt;span class="n">version&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">want&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Leave&lt;/span> &lt;span class="n">empty&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">default&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">CUDA&lt;/span> &lt;span class="mf">9.0&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="mf">9.2&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">location&lt;/span> &lt;span class="n">where&lt;/span> &lt;span class="n">CUDA&lt;/span> &lt;span class="mf">9.2&lt;/span> &lt;span class="n">toolkit&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">installed&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">Refer&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">README&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">md&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">more&lt;/span> &lt;span class="n">details&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">usr&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">local&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">9.2&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">cuDNN&lt;/span> &lt;span class="n">version&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">want&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Leave&lt;/span> &lt;span class="n">empty&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">default&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">cuDNN&lt;/span> &lt;span class="mi">7&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="mi">7&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">location&lt;/span> &lt;span class="n">where&lt;/span> &lt;span class="n">cuDNN&lt;/span> &lt;span class="mi">7&lt;/span> &lt;span class="n">library&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">installed&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">Refer&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">README&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">md&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">more&lt;/span> &lt;span class="n">details&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">usr&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">local&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mf">10.0&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">9.2&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">TensorRT&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">NCCL&lt;/span> &lt;span class="n">version&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">want&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">If&lt;/span> &lt;span class="n">NCCL&lt;/span> &lt;span class="mf">2.2&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="ow">not&lt;/span> &lt;span class="n">installed&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">then&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">can&lt;/span> &lt;span class="n">use&lt;/span> &lt;span class="n">version&lt;/span> &lt;span class="mf">1.3&lt;/span> &lt;span class="n">that&lt;/span> &lt;span class="n">can&lt;/span> &lt;span class="n">be&lt;/span> &lt;span class="n">fetched&lt;/span> &lt;span class="n">automatically&lt;/span> &lt;span class="n">but&lt;/span> &lt;span class="n">it&lt;/span> &lt;span class="n">may&lt;/span> &lt;span class="n">have&lt;/span> &lt;span class="n">worse&lt;/span> &lt;span class="n">performance&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">multiple&lt;/span> &lt;span class="n">GPUs&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="mf">2.2&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="mf">2.4&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">8&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">location&lt;/span> &lt;span class="n">where&lt;/span> &lt;span class="n">NCCL&lt;/span> &lt;span class="mi">2&lt;/span> &lt;span class="n">library&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">installed&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">Refer&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">README&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">md&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">more&lt;/span> &lt;span class="n">details&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">usr&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">local&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cuda&lt;/span>&lt;span class="p">]:&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">some&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nccl_install_path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nccl&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">note&lt;/span> &lt;span class="n">that&lt;/span> &lt;span class="n">each&lt;/span> &lt;span class="n">additional&lt;/span> &lt;span class="n">compute&lt;/span> &lt;span class="n">capability&lt;/span> &lt;span class="n">significantly&lt;/span> &lt;span class="n">increases&lt;/span> &lt;span class="n">your&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">time&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">binary&lt;/span> &lt;span class="n">size&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">3.5&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mf">7.0&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="mf">6.1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">want&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span> &lt;span class="n">clang&lt;/span> &lt;span class="n">as&lt;/span> &lt;span class="n">CUDA&lt;/span> &lt;span class="n">compiler&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">which&lt;/span> &lt;span class="n">gcc&lt;/span> &lt;span class="n">should&lt;/span> &lt;span class="n">be&lt;/span> &lt;span class="n">used&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="n">nvcc&lt;/span> &lt;span class="n">as&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">host&lt;/span> &lt;span class="n">compiler&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">xxx&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">gcc&lt;/span>&lt;span class="p">]:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Do&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">wish&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="n">TensorFlow&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">MPI&lt;/span> &lt;span class="n">support&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Please&lt;/span> &lt;span class="n">specify&lt;/span> &lt;span class="n">optimization&lt;/span> &lt;span class="n">flags&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">use&lt;/span> &lt;span class="n">during&lt;/span> &lt;span class="n">compilation&lt;/span> &lt;span class="n">when&lt;/span> &lt;span class="n">bazel&lt;/span> &lt;span class="n">option&lt;/span> &lt;span class="s2">&amp;#34;--config=opt&amp;#34;&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">specified&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">Default&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">march&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">native&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">march&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">native&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Would&lt;/span> &lt;span class="n">you&lt;/span> &lt;span class="n">like&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">interactively&lt;/span> &lt;span class="n">configure&lt;/span> &lt;span class="o">./&lt;/span>&lt;span class="n">WORKSPACE&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">Android&lt;/span> &lt;span class="n">builds&lt;/span>&lt;span class="err">?&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">y&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">N&lt;/span>&lt;span class="p">]:&lt;/span>&lt;span class="n">N&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>注意&lt;/strong>&lt;/p>
+&lt;ol>
+&lt;li>CUDA需要写清是9.2版本，否则可能会找不到小版本的依赖库。&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">bazel&lt;/span> &lt;span class="n">build&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">config&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">opt&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">copt&lt;/span>&lt;span class="o">=-&lt;/span>&lt;span class="n">msse4&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">2&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">copt&lt;/span>&lt;span class="o">=-&lt;/span>&lt;span class="n">mavx&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">copt&lt;/span>&lt;span class="o">=-&lt;/span>&lt;span class="n">mavx2&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">copt&lt;/span>&lt;span class="o">=-&lt;/span>&lt;span class="n">mfma&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">local_resources&lt;/span> &lt;span class="mi">2048&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">5&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mf">1.0&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">config&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">cuda&lt;/span> &lt;span class="o">//&lt;/span>&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tools&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">pip_package&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">build_pip_package&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">action_env&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;LD_LIBRARY_PATH=${LD_LIBRARY_PATH}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>由于目前节点支持主要的几种优化参数，故可以全部打开以加快运行速度。&lt;/p>
+&lt;p>为了他人的正常使用，可以主动限制在登陆节点上编译时的内存和CPU资源使用量。&lt;code>--local_resources 2048,.5,1.0&lt;/code>这个设定可能有些保守，但可以保证不会占用过多资源（实测需要11个小时左右，但全程内存占用不超过2G且只使用了一个线程，若觉得太慢可以把中间的参数适当调高）。&lt;/p>
+&lt;ol start="2">
+&lt;li>nccl和gcc的路径对应前面加载和编译的环境。&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;p>编译如果通过，则再运行以下命令编译c++ interface（实际上一步已经编译好所需的大部分依赖，这一步只是再封装成c++库）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">bazel build -c opt --copt=-msse4.2 --copt=-mavx --copt=-mavx2 --copt=-mfma --config=cuda --verbose_failures //tensorflow:libtensorflow_cc.so --action_env=&amp;#34;LD_LIBRARY_PATH=${LD_LIBRARY_PATH}&amp;#34;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里可以先将tensorflow-python安装好。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="o">./&lt;/span>&lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">bin&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tools&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">pip_package&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">build_pip_package&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow_pkg&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">pip&lt;/span> &lt;span class="n">install&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow_pkg&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">version&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">tags&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">whl&lt;/span> &lt;span class="c1"># depends on your version info&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后，将进行一系列依赖的编译和安装。以防万一，建议首先安装依赖，方便起见，这里使用conda安装。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">conda&lt;/span> &lt;span class="n">install&lt;/span> &lt;span class="n">automake&lt;/span> &lt;span class="n">autoconf&lt;/span> &lt;span class="n">libtool&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>将cmake切换到新版本：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">module add cmake/3.7.3
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>指定tf-cc的目标路径为变量&lt;code>$tensorflow_root&lt;/code>，并依次运行以下命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">proto&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">sed&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">i&lt;/span> &lt;span class="s1">&amp;#39;s;PROTOBUF_URL=.*;PROTOBUF_URL=&lt;/span>&lt;span class="se">\&amp;#34;&lt;/span>&lt;span class="s1">https://mirror.bazel.build/github.com/google/protobuf/archive/v3.6.0.tar.gz&lt;/span>&lt;span class="se">\&amp;#34;&lt;/span>&lt;span class="s1">;g&amp;#39;&lt;/span> &lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">contrib&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">makefile&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">download_dependencies&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">contrib&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">makefile&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">download_dependencies&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">contrib&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">makefile&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">downloads&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">protobuf&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">./&lt;/span>&lt;span class="n">autogen&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sh&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">./&lt;/span>&lt;span class="n">configure&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">prefix&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">proto&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span> &lt;span class="n">install&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">eigen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="o">../&lt;/span>&lt;span class="n">eigen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="n">build_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="n">build_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cmake&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">DCMAKE_INSTALL_PREFIX&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">eigen&lt;/span>&lt;span class="o">/&lt;/span> &lt;span class="o">../&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span> &lt;span class="n">install&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nsync&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="o">../../&lt;/span>&lt;span class="n">nsync&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="n">build_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="n">build_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cmake&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">DCMAKE_INSTALL_PREFIX&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nsync&lt;/span>&lt;span class="o">/&lt;/span> &lt;span class="o">../&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span> &lt;span class="n">install&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="o">../../&lt;/span>&lt;span class="n">absl&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">bazel&lt;/span> &lt;span class="n">build&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">rsync&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">avzh&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">include&lt;/span> &lt;span class="s1">&amp;#39;*/&amp;#39;&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">include&lt;/span> &lt;span class="s1">&amp;#39;*.h&amp;#39;&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="n">exclude&lt;/span> &lt;span class="s1">&amp;#39;*&amp;#39;&lt;/span> &lt;span class="n">absl&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="o">../../../../..&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">bin&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libtensorflow_cc&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">so&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">bin&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libtensorflow_framework&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">so&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">proto&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libprotobuf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">a&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nsync&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib64&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">libnsync&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">a&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">mkdir&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">p&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="n">bazel&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">genfiles&lt;/span>&lt;span class="o">/*&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">cc&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="n">tensorflow&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">core&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">tensorflow&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="n">third_party&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">proto&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/*&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">eigen&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">eigen3&lt;/span>&lt;span class="o">/*&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cp&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nsync&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>&lt;span class="o">/*&lt;/span>&lt;span class="n">h&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">tensorflow_root&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">include&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">find&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">name&lt;/span> &lt;span class="s2">&amp;#34;*.cc&amp;#34;&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="n">f&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">delete&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">rm&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">fr&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">proto&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">eigen&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">tmp&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">nsync&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>以完成c++部分的编译。&lt;/p>
+&lt;h2 id="deepmd-kit安装10">DeePMD-kit安装(1.0+)&lt;/h2>
+&lt;p>首先下载DeePMD-kit，并进入：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-mysql" data-lang="mysql">&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">some&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">workspace&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">git&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">clone&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">https&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">//&lt;/span>&lt;span class="n">github&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">deepmodeling&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">deepmd&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">kit&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">git&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">cd&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">deepmd&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">kit&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">deepmd_source_dir&lt;/span>&lt;span class="o">=`&lt;/span>&lt;span class="n">pwd&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果前面使用了&lt;code>module load gcc/4.9.4&lt;/code>提供的高版本gcc（以4.9.4为例）进行编译，需要手动载入对应的环境变量供cmake识别正确的gcc版本。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="k">export&lt;/span> &lt;span class="n">CC&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">apps&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">gcc&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">4.9&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bin&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">gcc&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">export&lt;/span> &lt;span class="n">CXX&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">apps&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">gcc&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">4.9&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bin&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">g&lt;/span>&lt;span class="o">++&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后安装dpmd-py&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">pip install .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>如果遇到&lt;code>no module named 'google'&lt;/code>或者&lt;code>no module named 'absl'&lt;/code>的报错，则可能存在版本bug，需要重新安装依赖。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">pip install --update protobus
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pip install --update absl-py
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/blockquote>
+&lt;p>指定DeePMD-kit的目标路径为变量&lt;code>$deepmd_root&lt;/code>，随后编译DeePMD-kit C++ Interface：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd $deepmd_source_dir/source
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir build
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cd build
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cmake -DTENSORFLOW_ROOT=$tensorflow_root -DCMAKE_INSTALL_PREFIX=$deepmd_root ..
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make install
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果运行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">$ ls $deepmd_root/bin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">dp_ipi
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ ls $deepmd_root/lib
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">libdeepmd_ipi.so libdeepmd_op.so libdeepmd.so
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>得到上述的结果，说明编译成功（若&lt;code>cmake&lt;/code>时检测到的是4.8或更低版本的gcc，则编译结果会缺少&lt;code>dp_ipi&lt;/code>和&lt;code>libdeepmd_ipi.so&lt;/code>）。&lt;/p>
+&lt;h2 id="lammps-deepmd-kit-接口编译">LAMMPS DeePMD-kit 接口编译&lt;/h2>
+&lt;p>首先编译接口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd $deepmd_source_dir/source/build
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make lammps
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后下载好稳定版的lammps，并解压：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd /some/workspace
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">wget -c https://lammps.sandia.gov/tars/lammps-stable.tar.gz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar xf lammps-stable.tar.gz
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>若解压后得到目录名为&lt;code>lammps-31Mar17&lt;/code>，则&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">cd lammps-31Mar17/src/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cp -r $deepmd_source_dir/source/build/USER-DEEPMD .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>打开deepmd module，并根据需要添加所需的模块，以&lt;code>fep&lt;/code>为例：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">make yes-user-deepmd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make yes-user-fep
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>载入需要的mpi库，并编译：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span> &lt;span class="nb">load&lt;/span> &lt;span class="n">intel&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">15.0&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">6&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span> &lt;span class="nb">load&lt;/span> &lt;span class="n">mpi&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">intel&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">5.0&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mf">3.049&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">make&lt;/span> &lt;span class="n">mpi&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">j4&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>得到可执行文件：&lt;code>lmp_mpi&lt;/code>。&lt;/p>
+&lt;p>可将该文件复制到在&lt;code>$PATH&lt;/code>中的路径，则可以直接输入文件名运行。&lt;/p>
+&lt;h2 id="注意">注意&lt;/h2>
+&lt;p>完成上述安装步骤后，若需要立即测试运行，&lt;strong>必须&lt;/strong>将stubs提供的&lt;code>libcuda.so&lt;/code>和&lt;code>libcuda.so.1&lt;/code>从环境变量中移除，否则运行时会报错。&lt;/p>
+&lt;p>可以直接退出登陆并重新登陆，以免出现该问题。&lt;/p>
+&lt;h2 id="一些可能的坑">一些可能的坑&lt;/h2>
+&lt;p>尽管上述过程应该已经绕过了大部分的坑，但仍不能保证100%安装运行成功。这里记录几种可能的报错的处理方案。&lt;/p>
+&lt;h3 id="需要conda-init">需要conda init&lt;/h3>
+&lt;p>这种情况已知可能发生在lsf脚本提交的步骤，来源于&lt;code>conda activate deepmd&lt;/code>的步骤。具体原因尚不清楚，解决方案是手动载入所需的环境变量。推荐的做法是利用用户自定义module。&lt;/p>
+&lt;p>首先，启用自定义module：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span> &lt;span class="nb">load&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">own&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后运行&lt;code>module avail&lt;/code>查看自定义脚本的文件位置，输出结果可能如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">----------- /share/base/modulefiles/compilers -----------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">............
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">------------- /usr/share/Modules/modulefiles ------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">dot module-git module-info modules null use.own
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">------------ /data/home/someuser/privatemodules ------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">null
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>显示&lt;code>/data/home/someuser/privatemodules&lt;/code>是当前用户自定义模块的存放位置。&lt;/p>
+&lt;p>则创建路径，并进入：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">mkdir -p /data/home/someuser/privatemodules
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cd /data/home/someuser/privatemodules
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后根据想要的名字创建文件或目录。&lt;/p>
+&lt;p>比如想以deepmd为模块名，且希望提供不同版本的支持，则可以：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">mkdir deepmd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">vim 1.0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>编辑1.0文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Help message&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">proc&lt;/span> &lt;span class="n">ModulesHelp&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="p">}&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">set&lt;/span> &lt;span class="n">nameversion&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">module&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">info&lt;/span> &lt;span class="n">name&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">regsub&lt;/span> &lt;span class="s2">&amp;#34;/.*&amp;#34;&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">nameversion&lt;/span> &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span> &lt;span class="n">name&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">regsub&lt;/span> &lt;span class="s2">&amp;#34;.*/&amp;#34;&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">nameversion&lt;/span> &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span> &lt;span class="n">version&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">puts&lt;/span> &lt;span class="n">stderr&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\t&lt;/span>&lt;span class="s2">Loads the $version $name environment&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Set variables&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">set&lt;/span> &lt;span class="n">nameversion&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">module&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">info&lt;/span> &lt;span class="n">name&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">regsub&lt;/span> &lt;span class="s2">&amp;#34;/.*&amp;#34;&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">nameversion&lt;/span> &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span> &lt;span class="n">name&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">regsub&lt;/span> &lt;span class="s2">&amp;#34;.*/&amp;#34;&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">nameversion&lt;/span> &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span> &lt;span class="n">version&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">whatis&lt;/span> &lt;span class="s2">&amp;#34;Miniconda, an alternative distirbution for python 3.6&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># set environment variables&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">setenv&lt;/span> &lt;span class="n">PYTHONROOT&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">home&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">someuser&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">anaconda3&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">envs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">deepmd&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">prepend&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">path&lt;/span> &lt;span class="n">PATH&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">env&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">PYTHONROOT&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">bin&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">prepend&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">path&lt;/span> &lt;span class="n">MANPATH&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">env&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">PYTHONROOT&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">share&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">man&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">prepend&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">path&lt;/span> &lt;span class="n">PYTHONPATH&lt;/span> &lt;span class="o">$&lt;/span>&lt;span class="n">env&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">PYTHONROOT&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">lib&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">python3&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">site&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">packages&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>注意修改&lt;code>PYTHONROOT&lt;/code>为正确的虚拟环境路径（可用&lt;code>conda env list&lt;/code>查看）,并且&lt;code>python3.6&lt;/code>也要与实际使用的python版本一致。&lt;/p>
+&lt;p>这样，便可以通过module调用所需的虚拟环境。&lt;/p>
+&lt;p>使用时提交脚本可以这样写：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span> &lt;span class="nb">load&lt;/span> &lt;span class="n">use&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">own&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">module&lt;/span> &lt;span class="nb">load&lt;/span> &lt;span class="n">deepmd&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">1.0&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item></channel></rss>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>LaTeX on Mira &amp; Ao</title><link>https://cloudac7.github.io/tags/latex/</link><description>Recent content in LaTeX on Mira &amp; Ao</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 03 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://cloudac7.github.io/tags/latex/index.xml" rel="self" type="application/rss+xml"/><item><title>Containerize Your Life: 容器化LaTeX环境助力论文写作</title><link>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</link><pubDate>Sat, 03 Jun 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</guid><description>&lt;img src="https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/docker.jpg" alt="Featured image of post Containerize Your Life: 容器化LaTeX环境助力论文写作" />&lt;blockquote>
+&lt;p>容器化拯救世界。——沃兹基硕德&lt;/p>
+&lt;p>本文是 Containerize Your Life 系列的第2篇博文。&lt;/p>
+&lt;p>这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。&lt;/p>
+&lt;/blockquote>
+&lt;p>没有什么比在一台全新的PC上安装TeXLive更加令人焦躁了。硕大的安装镜像、众多的宏包、令人眼花缭乱的参数设置……
+诚然目前的教程已经足够清晰，考虑到前置步骤依然需要花费一些时间，而阻挡了我们进入专心的码字环节，依然会令人心生几分无奈。
+无奈之余，毕业压力裹挟着LaTeX语法来袭，连睡梦里都是&lt;code>\section{Introduction}&lt;/code>……&lt;/p>
+&lt;p>有没有什么办法，可以让我们快速部署好TeXLive环境，直接进入写作环节呢？聪明的你看标题便一定能够想到——容器化。&lt;/p>
+&lt;h2 id="部署流程">部署流程&lt;/h2>
+&lt;p>话不多说，直接操练起来。&lt;/p>
+&lt;p>首先安装Docker，一般PC直接用&lt;a class="link" href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener"
+>Docker Desktop&lt;/a>就行，按照安装流程走完便可。&lt;/p>
+&lt;p>然后安装好本文的主角——&lt;a class="link" href="https://code.visualstudio.com/" target="_blank" rel="noopener"
+>VSCode&lt;/a>，并安装 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" target="_blank" rel="noopener"
+>Dev Container 插件&lt;/a> 和 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop" target="_blank" rel="noopener"
+>LaTeX Workshop 插件&lt;/a>、&lt;/p>
+&lt;p>创建或进入你的LaTeX项目目录。&lt;/p>
+&lt;p>然后 &lt;code>Ctrl+,&lt;/code> 进入设置 (Mac是&lt;code>⌘,&lt;/code>)。注意如果你不希望改变全局设置，请选择 &lt;code>Workspace&lt;/code> 选项卡，则以下配置仅对当前工作区生效。&lt;/p>
+&lt;p>搜索 &lt;code>Docker&lt;/code>，在左侧目录中找到 LaTeX 分类下的两个选项：&lt;code>latex-workshop.docker.enabled&lt;/code> 和 &lt;code>latex-workshop.docker.image.latex&lt;/code>。&lt;/p>
+&lt;p>根据设置的描述，这两个选项分别对应于是否启用 Docker 环境编译、选择哪个镜像导入。&lt;/p>
+&lt;p>于是我们勾选 &lt;code>latex-workshop.docker.enabled&lt;/code>，启用，然后在 &lt;code>latex-workshop.docker.image.latex&lt;/code> 的文本框中填入：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">ghcr.io/xu-cheng/texlive-full
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里我们采用了 &lt;a class="link" href="https://github.com/xu-cheng" target="_blank" rel="noopener"
+>Xu Cheng&lt;/a> 大佬维护的 &lt;a class="link" href="https://github.com/xu-cheng/latex-docker" target="_blank" rel="noopener"
+>TeXLive 容器环境&lt;/a>，后者可以提供完整的特性支持。&lt;/p>
+&lt;p>在VSCode中，按下 &lt;!-- raw HTML omitted -->Ctrl+Shift+`&lt;!-- raw HTML omitted --> 快捷键 (Mac是&lt;!-- raw HTML omitted -->⌃⇧`&lt;!-- raw HTML omitted -->) 调出终端，拉取容器：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">docker pull ghcr.io/xu-cheng/texlive-full
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>见证奇迹的时刻：编辑并保存你的&lt;code>tex&lt;/code>文件，如果没有语法错误，LaTeX Workshop会自动保存并编译，若编译成功没有报错，便可在当前目录找到编译得到的PDF。右上角按钮提供了分栏功能可以快速预览得到的PDF，从而检查是否有语法错误。&lt;/p>
+&lt;h2 id="one-more-trick-github-action">One More Trick: Github Action&lt;/h2>
+&lt;p>在当前项目的根目录创建两层目录：&lt;code>.github/workflows&lt;/code>，然后在里面创建一个 &lt;code>compile.yaml&lt;/code> 文件，定义 Github Action Workflow:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="c"># This is a basic workflow to help you get started with Actions&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Compile LaTeX&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c"># Controls when the workflow will run&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Triggers the workflow on push or pull request events but only for the main branch&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">push&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">branches&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">master ]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">pull_request&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">branches&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">master ]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Allows you to run this workflow manually from the Actions tab&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">workflow_dispatch&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c"># A workflow run is made up of one or more jobs that can run sequentially or in parallel&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">jobs&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># This workflow contains a single job called &amp;#34;build&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">build&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># The type of runner that the job will run on&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">runs-on&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ubuntu-latest&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Steps represent a sequence of tasks that will be executed as part of the job&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">steps&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">actions/checkout@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">xu-cheng/latex-action@v2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">root_file&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main.tex&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">uses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">actions/upload-artifact@v2.2.4&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">with&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main &lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">path&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">main.pdf&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">if-no-files-found&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">error&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">retention-days&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">7&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>分支请根据自己的情况进行修改，注意 &lt;code>main.tex&lt;/code> 对应于你希望编译的主文件名，若为其他的，请对应修改，编译后的PDF文件名默认与之对应，所以下面的&lt;code>path&lt;/code>也请对应修改。以上Action文件默认保留7天。&lt;/p>
+&lt;p>经过以上步骤，每次对 &lt;code>master&lt;/code> 分支的提交便会触发一个编译流程，从而可以在Github Action中下载得到的文件供预览。&lt;/p></description></item></channel></rss>

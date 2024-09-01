@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>HPC Management on Mira &amp; Ao</title><link>https://cloudac7.github.io/categories/hpc-management/</link><description>Recent content in HPC Management on Mira &amp; Ao</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Fri, 05 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://cloudac7.github.io/categories/hpc-management/index.xml" rel="self" type="application/rss+xml"/><item><title>利用Slurm管理NVIDIA MIG实例</title><link>https://cloudac7.github.io/p/%E5%88%A9%E7%94%A8slurm%E7%AE%A1%E7%90%86nvidia-mig%E5%AE%9E%E4%BE%8B/</link><pubDate>Fri, 05 Jul 2024 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E5%88%A9%E7%94%A8slurm%E7%AE%A1%E7%90%86nvidia-mig%E5%AE%9E%E4%BE%8B/</guid><description>&lt;p>可能有人看到这个标题便会有疑问，照理说 Slurm 21.08 以上已经提供了 MIG 支持，只要按照&lt;a class="link" href="https://slurm.schedmd.com/gres.html#MIG_Management" target="_blank" rel="noopener"
+>官方文档&lt;/a>上的指引便可以正确运行。&lt;/p>
+&lt;p>但情况并没有这么简单，因为官方文档中提到的 &lt;code>AutoDetect=nvml&lt;/code> 特性实际上需要在配置/编译 Slurm 时确保 &lt;code>--with-nvml&lt;/code> 特性开启，且需要正确安装 NVML 库来支持。
+由于 Slurm 通常是集群建设时由厂商工程师部署，往往并没有编译这一特性支持。于是要想开启这一功能，我们需要对 Slurm 进行重新编译或寻找满足要求的二进制包……&lt;/p>
+&lt;p>作为一个简单的 Work Around，本文自然未打算对这个情况进行说明。因此我们退而求其次，选择并非基于 &lt;code>AutoDetect=nvml&lt;/code> 的方案，即手动配置。&lt;/p>
+&lt;p>若要人工配置 MIG 硬件，我们需要在 Slurm 的 &lt;code>gres.conf&lt;/code> 中写入 MIG 对应的硬件挂载路径。根据官方文档，每一个 MIG 实例都挂载为一个 &lt;code>/dev/nvidia-caps/nvidia-cap*&lt;/code> 设备，则通过指定这些路径便可以正确配置硬件信息。&lt;/p>
+&lt;p>这里我们先事先创建好 MIG 实例，例如在开启了 MIG 特性支持的 2 和 3 号 GPU 上通过运行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">sudo nvidia-smi mig -i 2,3 -cgi 19,19,19,19,19,19,19 -C
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>便可以创建 14 个显存大小约 10G 的 GPU 计算实例，通过 &lt;code>nvidia-smi&lt;/code> 可以看到：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;span class="lnt">49
+&lt;/span>&lt;span class="lnt">50
+&lt;/span>&lt;span class="lnt">51
+&lt;/span>&lt;span class="lnt">52
+&lt;/span>&lt;span class="lnt">53
+&lt;/span>&lt;span class="lnt">54
+&lt;/span>&lt;span class="lnt">55
+&lt;/span>&lt;span class="lnt">56
+&lt;/span>&lt;span class="lnt">57
+&lt;/span>&lt;span class="lnt">58
+&lt;/span>&lt;span class="lnt">59
+&lt;/span>&lt;span class="lnt">60
+&lt;/span>&lt;span class="lnt">61
+&lt;/span>&lt;span class="lnt">62
+&lt;/span>&lt;span class="lnt">63
+&lt;/span>&lt;span class="lnt">64
+&lt;/span>&lt;span class="lnt">65
+&lt;/span>&lt;span class="lnt">66
+&lt;/span>&lt;span class="lnt">67
+&lt;/span>&lt;span class="lnt">68
+&lt;/span>&lt;span class="lnt">69
+&lt;/span>&lt;span class="lnt">70
+&lt;/span>&lt;span class="lnt">71
+&lt;/span>&lt;span class="lnt">72
+&lt;/span>&lt;span class="lnt">73
+&lt;/span>&lt;span class="lnt">74
+&lt;/span>&lt;span class="lnt">75
+&lt;/span>&lt;span class="lnt">76
+&lt;/span>&lt;span class="lnt">77
+&lt;/span>&lt;span class="lnt">78
+&lt;/span>&lt;span class="lnt">79
+&lt;/span>&lt;span class="lnt">80
+&lt;/span>&lt;span class="lnt">81
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| NVIDIA-SMI 535.129.03 Driver Version: 535.129.03 CUDA Version: 12.2 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU Name Persistence-M | Bus-Id Disp.A | Volatile Uncorr. ECC |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| Fan Temp Perf Pwr:Usage/Cap | Memory-Usage | GPU-Util Compute M. |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | MIG M. |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|=========================================+======================+======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 0 NVIDIA A100 80GB PCIe Off | 00000000:17:00.0 Off | 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 46C P0 63W / 300W | 4MiB / 81920MiB | 0% Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Disabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 1 NVIDIA A100 80GB PCIe Off | 00000000:65:00.0 Off | 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 50C P0 76W / 300W | 4MiB / 81920MiB | 0% Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Disabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 NVIDIA A100 80GB PCIe Off | 00000000:CA:00.0 Off | On |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 46C P0 64W / 300W | 87MiB / 81920MiB | N/A Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Enabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 NVIDIA A100 80GB PCIe Off | 00000000:E3:00.0 Off | On |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| N/A 49C P0 73W / 300W | 87MiB / 81920MiB | N/A Default |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | Enabled |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+-----------------------------------------+----------------------+----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| MIG devices: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI MIG | Memory-Usage | Vol| Shared |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Dev | BAR1-Usage | SM Unc| CE ENC DEC OFA JPG |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | ECC| |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|==================+================================+===========+=======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 8 0 1 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 9 0 2 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 10 0 3 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 11 0 4 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 12 0 5 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 13 0 6 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 8 0 1 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 9 0 2 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 11 0 3 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 12 0 4 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 13 0 5 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 3 14 0 6 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| Processes: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI PID Type Process name GPU Memory |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Usage |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|=======================================================================================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| No running processes found |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但若使用 &lt;code>ls -1 /dev/nvidia-caps/nvidia-cap*&lt;/code> 去查询挂载路径，就会发现下面给出的项目可能会远远多于我们实际创建的 MIG 实例数量。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap336
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap337
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap345
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap346
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap354
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap363
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap364
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap372
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap373
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap381
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap382
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap390
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap391
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap471
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap472
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap480
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap481
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap489
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap490
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap507
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap508
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap516
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap517
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap525
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap526
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap534
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/dev/nvidia-caps/nvidia-cap535
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>实际上上面的路径数量足足有 32 个，显然我们只有 14 个 GPU 实例。于是陷入僵局，到底哪些路径是可用的呢？&lt;/p>
+&lt;p>这里我们参考了&lt;a class="link" href="https://medium.com/nttlabs/nvidia-a100-mig-as-linux-device-66220ca16698" target="_blank" rel="noopener"
+>这篇博客&lt;/a>的思路，从中找到真正发挥作用的设备。&lt;/p>
+&lt;p>文中提到，通过开启 A100 的 DEVFS 模式，便可以通过 &lt;code>/dev&lt;/code> 来指定对应的 MIG 实例。当然由于我们的驱动远远高于 450 版本，故已经默认开启了 DEVFS 模式。
+此时，若运行以下命令，我们便令 &lt;code>migconfig&lt;/code> 和 &lt;code>migmonitor&lt;/code> 生效。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">nvidia-modprobe \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -f /proc/driver/nvidia/capabilities/mig/config \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -f /proc/driver/nvidia/capabilities/mig/monitor
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这样，当创建实例时，我们便可以从 &lt;code>/proc/driver/nvidia-caps/mig-minors&lt;/code> 中得到创建的 MIG 实例所对应的的设备编号，查询的方式便是 &lt;code>gpu&amp;lt;gpu id&amp;gt;/gi&amp;lt;gpu instance id&amp;gt;/ci&amp;lt;compute instance id&amp;gt;&lt;/code>。&lt;/p>
+&lt;p>例如对上面的 &lt;code>nvidia-smi&lt;/code> 输出中的第一个设备：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">+---------------------------------------------------------------------------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| MIG devices: |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| GPU GI CI MIG | Memory-Usage | Vol| Shared |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| ID ID Dev | BAR1-Usage | SM Unc| CE ENC DEC OFA JPG |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | | ECC| |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|==================+================================+===========+=======================|
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| 2 7 0 0 | 12MiB / 9728MiB | 14 0 | 1 0 0 0 0 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">| | 0MiB / 16383MiB | | |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+------------------+--------------------------------+-----------+-----------------------+
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>即在 GPU2 上创建的 7 号实例对应的编号 (GPU:2, GI: 7, CI: 0)，即可：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">cat /proc/driver/nvidia-caps/mig-minors &lt;span class="p">|&lt;/span> grep &lt;span class="s2">&amp;#34;gpu2/gi7/ci0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">gpu2/gi7/ci0 &lt;span class="m">337&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>即 &lt;code>/dev/nvidia-caps/nvidia-cap/nvidia-cap337&lt;/code>。&lt;/p>
+&lt;p>通过类似的操作我们便可以得到每个 MIG 实例所对应的挂载路径，从而可以在 &lt;code>gres.conf&lt;/code> 中写入类似于以下的行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"># 未开启 MIG 的
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 Name=gpu Type=a100 File=/dev/nvidia[0,1]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 Name=gpu Type=1g.10gb File=/dev/nvidia-caps/nvidia-cap[337,346,355,364,373,382,391,472,481,490,508,517,526,535]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后我们便可将这些设备配置到所需的队列中并用 &lt;code>--gres&lt;/code> 来进行指定，例如在 &lt;code>slurm.conf&lt;/code> 中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"># node, gres
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">GresTypes=gpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NodeName=c51-g002 CPUs=64 Sockets=2 CoresPerSocket=16 ThreadsPerCore=2 RealMemory=515275 Gres=gpu:a100:2,gpu:1g.10gb:14
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"># gpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">PartitionName=gpu2 MaxTime=INFINITE Nodes=c51-g002 State=UP
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>当然如果想要用一行命令直接得到Node配置，可以参考以下的写法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 获取 MIG 设备的 cap 编号&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">get_cap_numbers&lt;span class="o">()&lt;/span> &lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> sudo nvidia-smi mig -lci &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> /^[|][ ]+[0-9]/ {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> gsub(/^[|]/, &amp;#34;&amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> gsub(/[ ]+/, &amp;#34; &amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> split($0, a, &amp;#34; &amp;#34;);
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> printf &amp;#34;gpu%s/gi%s/ci%s\n&amp;#34;, a[1], a[2], a[5]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s1"> }&amp;#39;&lt;/span> &lt;span class="p">|&lt;/span> &lt;span class="k">while&lt;/span> &lt;span class="nb">read&lt;/span> mig_instance&lt;span class="p">;&lt;/span> &lt;span class="k">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> grep &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="nv">$mig_instance&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> /proc/driver/nvidia-caps/mig-minors &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;{print $NF}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">done&lt;/span> &lt;span class="p">|&lt;/span> sort -n &lt;span class="p">|&lt;/span> uniq &lt;span class="p">|&lt;/span> paste -sd,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 打印新的 GPU 配置&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;NodeName=c51-g002 Name=gpu Type=1g.10gb File=/dev/nvidia-caps/nvidia-cap[&lt;/span>&lt;span class="k">$(&lt;/span>get_cap_numbers&lt;span class="k">)&lt;/span>&lt;span class="s2">]&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item></channel></rss>
