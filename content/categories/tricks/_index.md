@@ -1,6 +1,6 @@
 ---
-title: HPC Management
-description: HPC 运维
+title: Tricks
+description: 没用的小技巧
 image: header.jpg
 
 # Badge style
