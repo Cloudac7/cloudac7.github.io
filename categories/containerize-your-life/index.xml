@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Containerize Your Life on 奥尔特云</title><link>https://cloudac7.github.io/categories/containerize-your-life/</link><description>Recent content in Containerize Your Life on 奥尔特云</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 03 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://cloudac7.github.io/categories/containerize-your-life/index.xml" rel="self" type="application/rss+xml"/><item><title>Containerize Your Life: 容器化LaTeX环境助力论文写作</title><link>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</link><pubDate>Sat, 03 Jun 2023 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/</guid><description>&lt;img src="https://cloudac7.github.io/p/containerize-your-life-%E5%AE%B9%E5%99%A8%E5%8C%96latex%E7%8E%AF%E5%A2%83%E5%8A%A9%E5%8A%9B%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C/docker.jpg" alt="Featured image of post Containerize Your Life: 容器化LaTeX环境助力论文写作" /&gt;&lt;blockquote&gt;
+&lt;p&gt;容器化拯救世界。——沃兹基硕德&lt;/p&gt;
+&lt;p&gt;本文是 Containerize Your Life 系列的第2篇博文。&lt;/p&gt;
+&lt;p&gt;这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;没有什么比在一台全新的PC上安装TeXLive更加令人焦躁了。硕大的安装镜像、众多的宏包、令人眼花缭乱的参数设置……
+诚然目前的教程已经足够清晰，考虑到前置步骤依然需要花费一些时间，而阻挡了我们进入专心的码字环节，依然会令人心生几分无奈。
+无奈之余，毕业压力裹挟着LaTeX语法来袭，连睡梦里都是&lt;code&gt;\section{Introduction}&lt;/code&gt;……&lt;/p&gt;
+&lt;p&gt;有没有什么办法，可以让我们快速部署好TeXLive环境，直接进入写作环节呢？聪明的你看标题便一定能够想到——容器化。&lt;/p&gt;
+&lt;h2 id="部署流程"&gt;部署流程
+&lt;/h2&gt;&lt;p&gt;话不多说，直接操练起来。&lt;/p&gt;
+&lt;p&gt;首先安装Docker，一般PC直接用&lt;a class="link" href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener"
+&gt;Docker Desktop&lt;/a&gt;就行，按照安装流程走完便可。&lt;/p&gt;
+&lt;p&gt;然后安装好本文的主角——&lt;a class="link" href="https://code.visualstudio.com/" target="_blank" rel="noopener"
+&gt;VSCode&lt;/a&gt;，并安装 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" target="_blank" rel="noopener"
+&gt;Dev Container 插件&lt;/a&gt; 和 &lt;a class="link" href="https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop" target="_blank" rel="noopener"
+&gt;LaTeX Workshop 插件&lt;/a&gt;、&lt;/p&gt;
+&lt;p&gt;创建或进入你的LaTeX项目目录。&lt;/p&gt;
+&lt;p&gt;然后 &lt;code&gt;Ctrl+,&lt;/code&gt; 进入设置 (Mac是&lt;code&gt;⌘,&lt;/code&gt;)。注意如果你不希望改变全局设置，请选择 &lt;code&gt;Workspace&lt;/code&gt; 选项卡，则以下配置仅对当前工作区生效。&lt;/p&gt;
+&lt;p&gt;搜索 &lt;code&gt;Docker&lt;/code&gt;，在左侧目录中找到 LaTeX 分类下的两个选项：&lt;code&gt;latex-workshop.docker.enabled&lt;/code&gt; 和 &lt;code&gt;latex-workshop.docker.image.latex&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;根据设置的描述，这两个选项分别对应于是否启用 Docker 环境编译、选择哪个镜像导入。&lt;/p&gt;
+&lt;p&gt;于是我们勾选 &lt;code&gt;latex-workshop.docker.enabled&lt;/code&gt;，启用，然后在 &lt;code&gt;latex-workshop.docker.image.latex&lt;/code&gt; 的文本框中填入：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ghcr.io/xu-cheng/texlive-full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里我们采用了 &lt;a class="link" href="https://github.com/xu-cheng" target="_blank" rel="noopener"
+&gt;Xu Cheng&lt;/a&gt; 大佬维护的 &lt;a class="link" href="https://github.com/xu-cheng/latex-docker" target="_blank" rel="noopener"
+&gt;TeXLive 容器环境&lt;/a&gt;，后者可以提供完整的特性支持。&lt;/p&gt;
+&lt;p&gt;在VSCode中，按下 &lt;!-- raw HTML omitted --&gt;Ctrl+Shift+`&lt;!-- raw HTML omitted --&gt; 快捷键 (Mac是&lt;!-- raw HTML omitted --&gt;⌃⇧`&lt;!-- raw HTML omitted --&gt;) 调出终端，拉取容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;docker pull ghcr.io/xu-cheng/texlive-full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;见证奇迹的时刻：编辑并保存你的&lt;code&gt;tex&lt;/code&gt;文件，如果没有语法错误，LaTeX Workshop会自动保存并编译，若编译成功没有报错，便可在当前目录找到编译得到的PDF。右上角按钮提供了分栏功能可以快速预览得到的PDF，从而检查是否有语法错误。&lt;/p&gt;
+&lt;h2 id="one-more-trick-github-action"&gt;One More Trick: Github Action
+&lt;/h2&gt;&lt;p&gt;在当前项目的根目录创建两层目录：&lt;code&gt;.github/workflows&lt;/code&gt;，然后在里面创建一个 &lt;code&gt;compile.yaml&lt;/code&gt; 文件，定义 Github Action Workflow:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;span class="lnt"&gt;13
+&lt;/span&gt;&lt;span class="lnt"&gt;14
+&lt;/span&gt;&lt;span class="lnt"&gt;15
+&lt;/span&gt;&lt;span class="lnt"&gt;16
+&lt;/span&gt;&lt;span class="lnt"&gt;17
+&lt;/span&gt;&lt;span class="lnt"&gt;18
+&lt;/span&gt;&lt;span class="lnt"&gt;19
+&lt;/span&gt;&lt;span class="lnt"&gt;20
+&lt;/span&gt;&lt;span class="lnt"&gt;21
+&lt;/span&gt;&lt;span class="lnt"&gt;22
+&lt;/span&gt;&lt;span class="lnt"&gt;23
+&lt;/span&gt;&lt;span class="lnt"&gt;24
+&lt;/span&gt;&lt;span class="lnt"&gt;25
+&lt;/span&gt;&lt;span class="lnt"&gt;26
+&lt;/span&gt;&lt;span class="lnt"&gt;27
+&lt;/span&gt;&lt;span class="lnt"&gt;28
+&lt;/span&gt;&lt;span class="lnt"&gt;29
+&lt;/span&gt;&lt;span class="lnt"&gt;30
+&lt;/span&gt;&lt;span class="lnt"&gt;31
+&lt;/span&gt;&lt;span class="lnt"&gt;32
+&lt;/span&gt;&lt;span class="lnt"&gt;33
+&lt;/span&gt;&lt;span class="lnt"&gt;34
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c"&gt;# This is a basic workflow to help you get started with Actions&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;&lt;/span&gt;&lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;Compile LaTeX&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;&lt;/span&gt;&lt;span class="c"&gt;# Controls when the workflow will run&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;&lt;/span&gt;&lt;span class="nt"&gt;on&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# Triggers the workflow on push or pull request events but only for the main branch&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;push&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;branches&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;master ]&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;pull_request&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;branches&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;master ]&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# Allows you to run this workflow manually from the Actions tab&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;workflow_dispatch&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;&lt;/span&gt;&lt;span class="c"&gt;# A workflow run is made up of one or more jobs that can run sequentially or in parallel&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;&lt;/span&gt;&lt;span class="nt"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# This workflow contains a single job called &amp;#34;build&amp;#34;&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;build&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# The type of runner that the job will run on&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;runs-on&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;ubuntu-latest&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# Steps represent a sequence of tasks that will be executed as part of the job&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;steps&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="c"&gt;# Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;actions/checkout@v2&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;xu-cheng/latex-action@v2&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;with&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;root_file&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;main.tex&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;actions/upload-artifact@v2.2.4&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;with&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;main &lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;path&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;main.pdf&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;if-no-files-found&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;error&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;retention-days&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;7&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;分支请根据自己的情况进行修改，注意 &lt;code&gt;main.tex&lt;/code&gt; 对应于你希望编译的主文件名，若为其他的，请对应修改，编译后的PDF文件名默认与之对应，所以下面的&lt;code&gt;path&lt;/code&gt;也请对应修改。以上Action文件默认保留7天。&lt;/p&gt;
+&lt;p&gt;经过以上步骤，每次对 &lt;code&gt;master&lt;/code&gt; 分支的提交便会触发一个编译流程，从而可以在Github Action中下载得到的文件供预览。&lt;/p&gt;</description></item><item><title>新时代的快乐科研：WSL2+Docker+EasyConnect+Clash</title><link>https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/</link><pubDate>Wed, 23 Mar 2022 00:00:00 +0000</pubDate><guid>https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/</guid><description>&lt;img src="https://cloudac7.github.io/p/%E6%96%B0%E6%97%B6%E4%BB%A3%E7%9A%84%E5%BF%AB%E4%B9%90%E7%A7%91%E7%A0%94wsl2-docker-easyconnect-clash/docker.jpg" alt="Featured image of post 新时代的快乐科研：WSL2+Docker+EasyConnect+Clash" /&gt;&lt;blockquote&gt;
+&lt;p&gt;容器化拯救世界。——沃兹基硕德&lt;/p&gt;
+&lt;p&gt;本文是 Containerize Your Life 系列的第1篇博文。&lt;/p&gt;
+&lt;p&gt;这一系列旨在用容器化整合、加速环境部署，让读者快速聚焦于生产力，也是一些零散心得的整理。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;新冠疫情之下，封校+实验室关闭，没有办法，只能在宿舍&lt;!-- raw HTML omitted --&gt;愉快摸鱼&lt;!-- raw HTML omitted --&gt;工作。由于宿舍的网是电信光纤，而非狭义的校园网，故连接到课题组集群尚需要使用EasyConnect VPN。众所周知，EasyConnect是一款流氓软件，并且WSL2的流量无法通过前者代理，因而需要另寻道路。&lt;/p&gt;
+&lt;h2 id="开端wsl2docker"&gt;开端：WSL2+Docker
+&lt;/h2&gt;&lt;p&gt;本文WSL运行环境：WSL2+Debian（为什么不是Ubuntu呢，我也想知道www）&lt;/p&gt;
+&lt;p&gt;众所周知，微软在Windows 10发布之初，便画了Windows Subsystem for Linux这个大饼，最终在2017年算是把饼端了上来。初代WSL实现了NT内核到Linux内核指令集的互转，但缺乏对更底层特性的支持，包括Docker和CUDA都无法运行，堪称官方版Cygwin。之所以想要升级到WSL2，正是因为其提供了对Docker和CUDA的完整支持。在Windows 11加持下，更是可以通过&lt;a class="link" href="https://docs.microsoft.com/en-us/windows/wsl/tutorials/gui-apps" target="_blank" rel="noopener"
+&gt;WSLg&lt;/a&gt;直接使用图形界面（且完整支持X11，妈妈再也不用担心我的&lt;code&gt;$DISPLAY&lt;/code&gt;配置写不对了）。从而在Windows 11下，可以获得接近原生Linux的完整体验（不愧是连长相都像macOS的一代）。&lt;/p&gt;
+&lt;p&gt;如果你仍在使用WSL1，也可以升级到WSL2。如果你的工作更多依赖本地磁盘文件而不需要更底层的应用，也可以停留在WSL1，后者对Windows分区文件读取性能更好。&lt;/p&gt;
+&lt;p&gt;而前文提到，WSL2的流量无法通过EasyConnect代理。一个简单的解决方案因而浮现出来，使用EasyConnect的Docker镜像来解决问题。&lt;/p&gt;
+&lt;p&gt;目前，&lt;a class="link" href="https://github.com/Hagb" target="_blank" rel="noopener"
+&gt;@Hagb&lt;/a&gt;大佬已经提供了基于EasyConnect Linux客户端封装的&lt;a class="link" href="https://github.com/Hagb/docker-easyconnect" target="_blank" rel="noopener"
+&gt;Docker镜像&lt;/a&gt;。以下仅作简单说明，详细使用方法请参考上述链接。&lt;/p&gt;
+&lt;p&gt;首先安装Docker，基本上是一键完成，因而也没有太多注意事项。安装好后记得检查下设置，确保开启了对WSL2的支持。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://s2.loli.net/2022/03/23/Ma7KlZNIGHmX3Y5.png"
+loading="lazy"
+alt="image-20220323114600926"
+&gt;&lt;/p&gt;
+&lt;p&gt;一切就绪后我们就可以开始Docker人生了。首先创建配置文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;touch ~/.easyconn
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;加载容器：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;docker run -d --device /dev/net/tun --cap-add NET_ADMIN -ti -p 127.0.0.1:1080:1080 -p 127.0.0.1:8888:8888 -e &lt;span class="nv"&gt;EC_VER&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;7.6.3 -v &lt;span class="nv"&gt;$HOME&lt;/span&gt;/.easyconn:/root/.easyconn -e &lt;span class="nv"&gt;CLI_OPTS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;-d &amp;lt;vpn_address&amp;gt; -u &amp;lt;username&amp;gt; -p &amp;lt;password&amp;gt;&amp;#34;&lt;/span&gt; hagb/docker-easyconnect:cli
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;注意替换&lt;code&gt;&amp;lt;vpn_address&amp;gt;&lt;/code&gt;，&lt;code&gt;&amp;lt;username&amp;gt;&lt;/code&gt;，&lt;code&gt;&amp;lt;password&amp;gt;&lt;/code&gt;为自己学校/单位的SSLVPN地址、用户名和密码。&lt;/p&gt;
+&lt;p&gt;可以在Docker Desktop中点击创建出的容器，查看一下日志（主要是检查下有没有登陆成功）。可能在几次（次数取决于运气，可能0-2）登陆失败后，终于在最下行出现了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;user &amp;#34;&amp;lt;username&amp;gt;&amp;#34; login successfully
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;说明登陆成功，可以继续愉快玩耍了。&lt;/p&gt;
+&lt;p&gt;上述命令中我们映射了两组端口，分别是1080和8888，对应&lt;code&gt;socks&lt;/code&gt;和&lt;code&gt;http&lt;/code&gt;代理。接下来我们便尝试利用Socks隧道对SSH进行代理。Debian下的&lt;code&gt;nc&lt;/code&gt;命令似乎并不支持&lt;code&gt;-x&lt;/code&gt;选项，因而在百度上直接搜到的教程可能并不能奏效。因此，这里采用其他方案。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo apt update
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo apt install connect-proxy
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;然后配置&lt;code&gt;~/.ssh/config&lt;/code&gt;，采用如下格式：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Host &amp;lt;cluster&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; User &amp;lt;cluster_username&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Hostname &amp;lt;cluster_ip&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Port &amp;lt;cluster_port&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; ProxyCommand connect-proxy -S localhost:1080 %h %p
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;请务必替换上文中信息为自己的用户名、IP、端口等。当然Hostname可以随便取。&lt;/p&gt;
+&lt;p&gt;然后测试一下是否可以正常连接：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ssh &amp;lt;cluster&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果看到了登陆成功信息，说明你的EasyConnect已经正确配置在WSL上。&lt;/p&gt;
+&lt;h2 id="进阶clash配置socks定向转发"&gt;进阶：Clash配置Socks定向转发
+&lt;/h2&gt;&lt;p&gt;但上述方法仅适用于WSL2内部的SSH，如果需要在Windows本体使用SSH（比如VSCode的Remote，舒爽程度可谓谁用谁知道），尚且需要想办法通过Socks进行代理。同时，作为一个合格的科研人，科学的上网工具自然是必备，后者可以帮助我们合理使用404搜索引擎快速检索所需的文献。但科学上网工具很多也同样基于Socks5代理，甚至可能存在端口冲突（不少客户端默认使用1080端口）。&lt;/p&gt;
+&lt;p&gt;Clash作为功能强大的多平台代理客户端，可以方便地解决Socks代理问题。&lt;/p&gt;
+&lt;p&gt;首先安装Clash客户端（如果有的话跳过此步）。&lt;/p&gt;
+&lt;p&gt;运行，点击&lt;code&gt;config.yaml&lt;/code&gt;右侧的&lt;code&gt;&amp;lt;&amp;gt;&lt;/code&gt;，进入规则编辑。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://s2.loli.net/2022/03/23/45q3OJh8UCft1yG.png"
+loading="lazy"
+alt="image-20220323121155764"
+&gt;&lt;/p&gt;
+&lt;p&gt;在配置文件中，添加以下代理组（放置在&lt;code&gt;proxies&lt;/code&gt;下）：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;proxies&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;vpn1&amp;#34;&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;socks5&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;server&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;127.0.0.1&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;port&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="m"&gt;1080&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里的端口是我们上文映射的1080端口。Clash默认采用7890端口，故其他代理不会与之冲突。&lt;/p&gt;
+&lt;p&gt;然后在规则组中添加以下条目：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;rules&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="l"&gt;IP-CIDR,xxx.xxx.xxx.0/24,vpn1&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;- &lt;span class="l"&gt;IP-CIDR,xxx.xxx.xxx.xxx/32,vpn1&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里的写法请参考[CIDR转换表](&lt;a class="link" href="https://techlibrary.hpe.com/docs/otlink-wo/CIDR-Conversion-Table.html" target="_blank" rel="noopener"
+&gt;CIDR Conversion Table | HPE Edgeline Docs&lt;/a&gt;)。第一行表示&lt;code&gt;xxx.xxx.xxx.1&lt;/code&gt;直到&lt;code&gt;xxx.xxx.xxx.254&lt;/code&gt;的所有IP，第二行则表示只包括&lt;code&gt;xxx.xxx.xxx.xxx&lt;/code&gt;这一个IP地址。注意这里的&lt;code&gt;vpn1&lt;/code&gt;对应&lt;code&gt;proxies&lt;/code&gt;中的&lt;code&gt;name&lt;/code&gt;字段。&lt;/p&gt;
+&lt;p&gt;保存，如果没有报错说明正确。然后检查需要校园网权限的网站，若可以访问，说明配置成功。&lt;/p&gt;
+&lt;p&gt;但聪明的你可能已经发现，PowerShell下的SSH还是没走代理啊？&lt;/p&gt;
+&lt;p&gt;是的，我们还需要额外一步：开启TUN模式。这样CFW可以接管非系统代理应用的流量。&lt;/p&gt;
+&lt;p&gt;详细步骤请参考&lt;a class="link" href="https://docs.cfw.lbyczf.com/contents/tun.html" target="_blank" rel="noopener"
+&gt;官方文档&lt;/a&gt;，对0.19.0以上版本，只需进行以下两步：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;点击&lt;code&gt;General&lt;/code&gt;中&lt;code&gt;Service Mode&lt;/code&gt;右边&lt;code&gt;Manage&lt;/code&gt;，在打开窗口中安装服务模式，安装完成应用会自动重启，Service Mode 右边地球图标变为&lt;code&gt;绿色&lt;/code&gt;即安装成功（无法安装参考：&lt;a class="link" href="https://docs.cfw.lbyczf.com/contents/questions.html#service-mode-%e6%97%a0%e6%b3%95%e5%ae%89%e8%a3%85-windows" target="_blank" rel="noopener"
+&gt;这里&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;点击&lt;code&gt;General&lt;/code&gt;中&lt;code&gt;TUN Mode&lt;/code&gt;右边开关启动 TUN 模式&lt;/li&gt;
+&lt;/ol&gt;&lt;/blockquote&gt;
+&lt;p&gt;接下来就是见证奇迹的时刻。打开PowerShell，直接输入ssh命令登陆校园网集群，便可以登陆成功，且在Clash的Connecting选项卡可以看到对应的连接。打开VSCode，直接开启Remote，也可以正确识别。&lt;/p&gt;
+&lt;p&gt;到这里，我们已经顺利完成了WSL2+Docker+EasyConnect+Clash的全工具链配置。还愣着干啥，赶紧摸🐟啊（x）&lt;/p&gt;
+&lt;h2 id="xmu特供并不万能的sslvpn"&gt;XMU特供：并不万能的SSLVPN
+&lt;/h2&gt;&lt;p&gt;对其他学校的同学们，看到这里可以关掉了。&lt;!-- raw HTML omitted --&gt;因为我也不知道后面的该怎么写了（x）&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;p&gt;但是对于XMU的同学们来说，似乎还差了点什么。没错，就是CNKI。&lt;/p&gt;
+&lt;p&gt;非常遗憾，XMU的SSLVPN只能支持校内IP的代理，换言之包括CNKI和各大期刊的网站，都只能用WebVPN访问。&lt;/p&gt;
+&lt;p&gt;因此上文中我只配置了课题组的几个IP，而没有做更进一步的设置。&lt;/p&gt;
+&lt;p&gt;好在，&lt;a class="link" href="https://github.com/spencerwooo" target="_blank" rel="noopener"
+&gt;@spencerwoo&lt;/a&gt;大佬制作了一个&lt;a class="link" href="https://webvpn.vercel.app/" target="_blank" rel="noopener"
+&gt;网站&lt;/a&gt;并&lt;a class="link" href="https://github.com/spencerwooo/bit-webvpn-converter" target="_blank" rel="noopener"
+&gt;开源&lt;/a&gt;，可以转换任意网址到BIT的WebVPN。因此我Fork了原仓库并&lt;a class="link" href="https://github.com/Cloudac7/xmu-webvpn-converter" target="_blank" rel="noopener"
+&gt;依样画葫芦&lt;/a&gt;，制作了适用于XMU的版本——&lt;a class="link" href="https://cloudac7.github.io/xmu-webvpn-converter/" target="_blank" rel="noopener"
+&gt;XMU WEBVPN Converter&lt;/a&gt;，托管到Github Pages上。&lt;/p&gt;
+&lt;p&gt;使用方法非常简单，只需在Original URL中输入原始链接，点击中间的绿色按钮，即可在下方得到转换后的链接。可以选择打开或者复制。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://s2.loli.net/2022/03/23/a8NlfuSbjLzd674.png"
+loading="lazy"
+alt="image-20220323123951006"
+&gt;&lt;/p&gt;
+&lt;p&gt;拜其所赐，我可以直接使用404学术搜索，然后把链接粘贴到这里获取WebVPN地址并访问、下载原始文献。&lt;/p&gt;
+&lt;p&gt;妈妈再也不用担心导师在微信群发文献链接了（笑）&lt;/p&gt;
+&lt;p&gt;以上，开启疫情下的快乐科研吧♥&lt;/p&gt;</description></item></channel></rss>
