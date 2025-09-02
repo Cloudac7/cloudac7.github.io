@@ -22,3 +22,11 @@ url = "https://twitter.com/Cloudac7_Canoe"
 
 [social.params]
 icon = "brand-twitter"
+
+[[social]]
+identifier = "bilibili"
+name = "Bilibili"
+url = "https://space.bilibili.com/3025889"
+
+[social.params]
+icon = "brand-bilibili"
