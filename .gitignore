@@ -1,4 +1,11 @@
 public
 resources
 .obsidian
-assets/jsconfig.json
+assets/jsconfig.json.DS_Store
+Thumbs.db
+db.json
+*.log
+node_modules/
+public/
+.deploy*/
+_multiconfig.yml

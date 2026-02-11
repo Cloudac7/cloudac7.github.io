@@ -1,0 +1,43 @@
+logo:
+  icon: /assets/icon.svg
+  title: オールトの雲
+  subtitle: '你眼中观测到的世界 | 就是我的奥尔特云'
+
+inject:
+  head:
+    - <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/satouriko/LxgwWenKai_Webfonts@v1.101/dist/LXGWWenKai-Regular.css" />
+    - <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/satouriko/LxgwWenKai_Webfonts@v1.101/dist/LXGWWenKai-Light.css" />
+    - <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/satouriko/LxgwWenKai_Webfonts@v1.101/dist/LXGWWenKai-Bold.css" />
+
+menubar:
+  items: []
+site_tree:
+  home:
+    sidebar: starter, welcome, recent
+  index_blog:
+    sidebar: starter, welcome, recent
+  index_topic:
+    menu_id: topic
+  topic:
+    menu_id: topic
+
+article:
+  share: [wechat, weibo, email, link]
+  type: tech
+
+style:
+  border-radius:
+    bar: 4px
+    card: 4px
+    block: 4px
+  text-align: justify
+  smooth_scroll: false
+  codeblock:
+    scrollbar: 0px
+  font-size:
+    body: 1rem
+  font-family:
+    logo: '"LXGW WenKai", system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif'
+    body: '"LXGW WenKai", system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif'
+    code: '"LXGW WenKai", Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
+    codeblock: 'Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
