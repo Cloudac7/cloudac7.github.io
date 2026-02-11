@@ -4,6 +4,8 @@ author:
   name: Cloudac7
 image: cover.jpg
 date: 2020-03-28
+cover: /images/koias-anime.jpg
+banner: /images/koias-anime.jpg
 categories:
   - ACGN
 ---

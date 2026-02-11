@@ -7,6 +7,7 @@ image: docker.jpg
 categories:
   - Tricks
   - Containerize Your Life
+banner: /images/docker.jpg
 ---
 
 > 容器化拯救世界。——沃兹基硕德

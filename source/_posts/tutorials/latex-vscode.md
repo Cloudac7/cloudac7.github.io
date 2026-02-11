@@ -11,6 +11,7 @@ categories:
 tags:
   - Docker
   - LaTeX
+banner: /images/docker.jpg
 ---
 
 > 容器化拯救世界。——沃兹基硕德

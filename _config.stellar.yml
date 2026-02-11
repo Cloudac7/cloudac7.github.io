@@ -1,5 +1,5 @@
 logo:
-  icon: /assets/icon.svg
+  avatar: /assets/icon.svg
   title: オールトの雲
   subtitle: '你眼中观测到的世界 | 就是我的奥尔特云'
 
@@ -9,8 +9,31 @@ inject:
     - <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/satouriko/LxgwWenKai_Webfonts@v1.101/dist/LXGWWenKai-Light.css" />
     - <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/satouriko/LxgwWenKai_Webfonts@v1.101/dist/LXGWWenKai-Bold.css" />
 
+# 侧边栏主功能导航菜单
 menubar:
-  items: []
+  columns: 4 # 一行多少个
+  items: # 可按照自己需求增加，符合以下格式即可
+    - id: post # 页面中高亮的 menu_id
+      theme: '#1BCDFC' # 高亮时的颜色，仅 svg 中 fill="currentColor" 时有效
+      icon: solar:documents-bold-duotone # 支持 svg/img 标签，可以定义在 icons.yml 文件中，也支持外部图片的 URL
+      title: 文章 # 标题
+      url: / # 跳转链接，支持相对路径和绝对路径
+    - id: BiliBili
+      theme: '#3DC550'
+      icon: https://api.iconify.design/solar:tv-bold.svg
+      title: B 站
+      url: https://space.bilibili.com/3025889
+    - id: Github
+      theme: '#FA6400'
+      icon: https://api.iconify.design/solar:code-bold.svg
+      title: Github
+      url: https://github.com/cloudac7
+    - id: social
+      theme: '#F44336'
+      icon: https://api.iconify.design/solar:chat-square-like-bold.svg
+      title: 推特
+      url: https://twitter.com/Cloudac7_Canoe
+
 site_tree:
   home:
     sidebar: starter, welcome, recent
@@ -41,3 +64,23 @@ style:
     body: '"LXGW WenKai", system-ui, "Microsoft Yahei", "Segoe UI", -apple-system, Roboto, Ubuntu, "Helvetica Neue", Arial, "WenQuanYi Micro Hei", sans-serif'
     code: '"LXGW WenKai", Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
     codeblock: 'Menlo, Monaco, Consolas, system-ui, "Courier New", monospace, sans-serif'
+
+comments:
+  service: giscus
+  # giscus
+  # https://giscus.app/zh-CN
+  giscus:
+    src: https://giscus.app/client.js
+    data-repo: Cloudac7/cloudac7.github.io
+    data-repo-id: MDEwOlJlcG9zaXRvcnkyNzM0MzcxMjE=
+    data-category: Announcements
+    data-category-id: DIC_kwDOEExRwc4C2M8Z
+    data-mapping: pathname
+    data-strict: 0
+    data-reactions-enabled: 1
+    data-emit-metadata: 0
+    data-input-position: top # top, bottom
+    data-theme: preferred_color_scheme
+    data-lang: zh-CN
+    data-loading: lazy
+    crossorigin: anonymous
