@@ -3,6 +3,7 @@ title: "酷炫终端Banner生成方法"
 author: 
   name: Cloudac7
 date: 2023-05-15
+updated: 2023-05-15
 categories:
   - Tricks
 ---

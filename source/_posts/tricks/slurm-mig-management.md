@@ -3,6 +3,7 @@ title: "利用Slurm管理NVIDIA MIG实例"
 author: 
   name: Cloudac7
 date: 2024-07-05
+updated: 2024-07-05
 categories:
   - Tricks
   - HPC Management

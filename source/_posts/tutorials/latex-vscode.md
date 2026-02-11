@@ -4,6 +4,7 @@ description: 用容器取代本地TeXLive环境实现LaTeX快速编译
 author: 
   name: Cloudac7
 date: 2023-06-03
+updated: 2023-06-03
 image: docker.jpg
 categories:
   - Tricks
