@@ -7,48 +7,31 @@ on:
         branches: [master]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-
-        steps:
-            - uses: actions/checkout@v2
-
-            - name: Cache Hugo resources
-              uses: actions/cache@v4
-              env:
-                  cache-name: cache-hugo-resources
-              with:
-                  path: resources
-                  key: ${{ env.cache-name }}
-
-            - uses: actions/setup-go@v2
-              with:
-                  go-version: "^1.17.0"
-            - run: go version
-
-            - name: Cache Go Modules
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cache/go-build
-                      ~/go/pkg/mod
-                  key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-                  restore-keys: |
-                      ${{ runner.os }}-go-
-
-            - name: Setup Hugo
-              uses: peaceiris/actions-hugo@v2
-              with:
-                  hugo-version: "latest"
-                  extended: true
-
-            - name: Build
-              run: hugo --minify --gc
-
-            - name: Deploy 🚀
-              uses: JamesIves/github-pages-deploy-action@4.1.4
-              with:
-                  branch: gh-pages
-                  folder: public
-                  clean: true
-                  single-commit: true
+  build:
+    runs-on: ubuntu-latest # 运行环境为最新版 Ubuntu
+    name: auto deploy
+    steps:
+    # 1. 获取源码
+    - name: Checkout
+      uses: actions/checkout@v3 # 使用 actions/checkout@v3
+      with: # 条件
+        submodules: true # Checkout private submodules(themes or something else). 当有子模块时切换分支？
+    # 2. 配置环境
+    - name: Setup Node.js environment
+      uses: actions/setup-node@master
+      with:
+        node-version: "22.x" # 指定 Node.js 版本为 22.x
+    # 3. 生成静态文件
+    - name: Generate Public Files
+      run: |
+        npm i
+        npm install hexo-cli -g
+        hexo clean && hexo generate
+    # 4. 部署到 GitHub 仓库
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: gh-pages
+        folder: public
+        clean: true
+        single-commit: true
