@@ -3,6 +3,10 @@ date: 2026-02-12
 updated: 2026-02-12
 remote_path: source/_posts/notebooks/simulation
 notebook: molecular_simulation
+tags:
+  - MD
+  - DeePMD
+  - Lammps
 ---
 ## 安装
 
