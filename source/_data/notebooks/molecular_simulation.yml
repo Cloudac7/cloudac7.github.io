@@ -1,0 +1,19 @@
+name: 分子模拟
+title: Molecular Simulation
+#icon: /images/favicon.png
+description: 分子模拟笔记合集
+base_dir: /notes/molecular_simulation
+
+sort: 1
+per_page: 10
+order_by: -updated
+license: true
+share: true
+
+menu_id: notes
+# 笔记列表页的左/右侧栏
+# leftbar: [tagtree, recent]
+# rightbar: []
+# 笔记页的左/右侧栏
+# note_leftbar: [tagtree, recent]
+# note_rightbar: [toc]
