@@ -2,6 +2,7 @@
 date: 2026-02-12
 updated: 2026-02-12
 remote_path: source/_posts/notebooks/simulation
+notebook: molecular_simulation
 ---
 ## 安装
 
