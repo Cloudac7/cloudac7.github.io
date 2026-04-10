@@ -21,10 +21,10 @@ jobs:
       uses: actions/setup-node@master
       with:
         node-version: "22.x" # 指定 Node.js 版本为 22.x
-    # 3. 替换Markdown中的图片位置，将 `source/images` 替换为 `/images`
+    # 3. 替换Markdown中的图片位置，将 `/source/images` 替换为 `/images`
     - name: Replace image paths in Markdown files
       run: |
-        find . -name "*.md" -type f -exec sed -i 's/source\/images/\/images/g' {} \;
+        find . -name "*.md" -type f -exec sed -i 's/\/source\/images/\/images/g' {} \;
     # 4. 生成静态文件
     - name: Generate Public Files
       run: |
