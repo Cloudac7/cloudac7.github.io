@@ -16,7 +16,8 @@ categories:
 插件目前尚未上架，因而想要体验的话，请在Release界面中下载1.0.1版本的三个文件:
 - `main.js`
 - `manifest.json`
-- `styles.css
+- `styles.css`
+
 完成后，请在当前Vault目录下的 `.obsidian/plugins` 目录下建立 `obsidian-github-pager` 目录，并放入上述三个文件。
 
 重启Obsidian，进入设置界面，即可发现在“第三方插件”部分增加了“Github Pager”的选项，点击便可看到如下图的界面：
