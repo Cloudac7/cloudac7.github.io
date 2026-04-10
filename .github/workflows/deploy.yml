@@ -21,13 +21,17 @@ jobs:
       uses: actions/setup-node@master
       with:
         node-version: "22.x" # 指定 Node.js 版本为 22.x
-    # 3. 生成静态文件
+    # 3. 替换Markdown中的图片位置，将 `source/images` 替换为 `/images`
+    - name: Replace image paths in Markdown files
+      run: |
+        find . -name "*.md" -type f -exec sed -i 's/source\/images/\/images/g' {} \;
+    # 4. 生成静态文件
     - name: Generate Public Files
       run: |
         npm i
         npm install hexo-cli -g
         hexo clean && hexo generate
-    # 4. 部署到 GitHub 仓库
+    # 5. 部署到 GitHub 仓库
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@4.1.4
       with:
