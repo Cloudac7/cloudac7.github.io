@@ -3,11 +3,10 @@ title: "joblib: 简单易懂的平行世界"
 author: 
   name: Cloudac7
 date: 2023-06-15
-updated: 2023-06-15
+updated: 2026-04-10
 categories:
   - Tricks
 ---
-
 Joblib是一款轻量级的Python工作流实现，可以简单快速地把相互独立的循环并行起来，从而节省时间。
 
 ## 安装
