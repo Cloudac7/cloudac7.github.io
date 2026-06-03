@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content'
+
+export interface Props {
+  topic: CollectionEntry<'topics'>
+  postCount: number
+}
+
+const { topic, postCount } = Astro.props
+---
+
+<div class="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+  {topic.data.image && (
+    <img src={topic.data.image} alt="" class="h-32 w-full object-cover" loading="lazy" />
+  )}
+  <div class="p-5">
+    <h2 class="mb-1 text-lg font-bold">{topic.data.title}</h2>
+    {topic.data.description && (
+      <p class="mb-3 text-sm text-[var(--color-muted)]">{topic.data.description}</p>
+    )}
+    <span class="text-xs text-[var(--color-muted)]">{postCount} 篇文章</span>
+  </div>
+</div>

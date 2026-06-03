@@ -1,0 +1,16 @@
+---
+export interface Props {
+  href?: string
+  class?: string
+}
+
+const { href, class: className } = Astro.props
+const Tag = href ? 'a' : 'span'
+---
+
+<Tag
+  href={href}
+  class="inline-block rounded-md bg-[var(--color-border)]/50 px-2.5 py-0.5 text-xs font-medium text-[var(--color-muted)] transition-colors hover:bg-primary-100 hover:text-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-300 {className ?? ''}"
+>
+  <slot />
+</Tag>

@@ -1,0 +1,39 @@
+---
+import Badge from '@/components/ui/Badge.astro'
+import type { CollectionEntry } from 'astro:content'
+
+export interface Props {
+  post: CollectionEntry<'posts'>
+}
+const { post } = Astro.props
+const { data } = post
+---
+
+<div class="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm transition-shadow hover:shadow-md">
+  <a href={`/posts/${post.slug}/`} class="block p-5">
+    {data.cover && (
+      <img
+        src={data.cover}
+        alt=""
+        class="mb-4 h-40 w-full rounded-lg object-cover"
+        loading="lazy"
+      />
+    )}
+    <h2 class="mb-2 text-lg font-bold leading-snug text-[var(--color-text)]">
+      {data.title}
+    </h2>
+    {data.description && (
+      <p class="mb-3 line-clamp-2 text-sm text-[var(--color-muted)]">
+        {data.description}
+      </p>
+    )}
+    <div class="flex flex-wrap items-center gap-2 text-xs text-[var(--color-muted)]">
+      <time datetime={data.date.toISOString()}>
+        {data.date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
+      </time>
+      {data.categories?.slice(0, 2).map(cat => (
+        <Badge href={`/categories/${encodeURIComponent(cat)}/`}>{cat}</Badge>
+      ))}
+    </div>
+  </a>
+</div>

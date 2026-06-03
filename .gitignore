@@ -1,11 +1,7 @@
-public
-resources
-.obsidian
-assets/jsconfig.json.DS_Store
-Thumbs.db
-db.json
-*.log
 node_modules/
-public/
-.deploy*/
-_multiconfig.yml
+dist/
+.astro/
+*.log
+Thumbs.db
+.DS_Store
+.obsidian

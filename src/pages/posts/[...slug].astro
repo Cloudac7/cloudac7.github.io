@@ -1,0 +1,72 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import PostMeta from '@/components/blog/PostMeta.astro'
+import Badge from '@/components/ui/Badge.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import RecentPosts from '@/components/sidebar/RecentPosts.astro'
+import { getAllPosts, getCategories, getTags } from '@/utils/posts'
+import { getCollection, type CollectionEntry } from 'astro:content'
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts()
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props as { post: CollectionEntry<'posts'> }
+const data = post.data
+const { Content } = await post.render()
+
+const allPosts = await getAllPosts()
+const categories = await getCategories()
+const tags = await getTags()
+
+const currentIndex = allPosts.findIndex(p => p.slug === post.slug)
+const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null
+const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
+---
+
+<BaseLayout title={data.title} description={data.description}>
+  <div slot="sidebar">
+    <Profile />
+    <RecentPosts posts={allPosts} />
+  </div>
+
+  <article>
+    {data.banner && (
+      <img src={data.banner} alt="" class="mb-6 h-48 w-full rounded-xl object-cover" />
+    )}
+    <h1 class="mb-4 text-3xl font-bold leading-tight">{data.title}</h1>
+
+    <PostMeta post={post} />
+
+    <div class="prose prose-lg max-w-none dark:prose-invert">
+      <Content />
+    </div>
+
+    {data.topic && (
+      <div class="mt-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <p class="text-sm text-[var(--color-muted)]">
+          属于专栏：<a href={`/topics/${encodeURIComponent(data.topic)}/`} class="font-medium text-primary-500 hover:underline">{data.topic}</a>
+        </p>
+      </div>
+    )}
+
+    <div class="mt-8 flex items-center justify-between border-t border-[var(--color-border)] pt-6">
+      {prev ? (
+        <a href={`/posts/${prev.slug}/`} class="group max-w-[45%]">
+          <span class="text-xs text-[var(--color-muted)]">← 上一篇</span>
+          <p class="mt-1 text-sm font-medium text-[var(--color-text)] transition-colors group-hover:text-primary-500">{prev.data.title}</p>
+        </a>
+      ) : <div />}
+      {next ? (
+        <a href={`/posts/${next.slug}/`} class="group max-w-[45%] text-right">
+          <span class="text-xs text-[var(--color-muted)]">下一篇 →</span>
+          <p class="mt-1 text-sm font-medium text-[var(--color-text)] transition-colors group-hover:text-primary-500">{next.data.title}</p>
+        </a>
+      ) : <div />}
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import type { CollectionEntry } from 'astro:content'
+
+export interface Props {
+  posts: CollectionEntry<'posts'>[]
+}
+
+const { posts } = Astro.props
+---
+
+<div class="mb-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
+  <h3 class="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--color-muted)]">最近文章</h3>
+  <ul class="space-y-2">
+    {posts.slice(0, 5).map(post => (
+      <li>
+        <a
+          href={`/posts/${post.slug}/`}
+          class="line-clamp-2 text-sm leading-snug text-[var(--color-text)] transition-colors hover:text-primary-500"
+        >
+          {post.data.title}
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>

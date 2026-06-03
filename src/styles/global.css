@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-text: #1e293b;
+    --color-muted: #64748b;
+    --color-border: #e2e8f0;
+  }
+
+  .dark {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-text: #f1f5f9;
+    --color-muted: #94a3b8;
+    --color-border: #334155;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply transition-colors duration-300;
+  }
+}
+
+/* Obsidian Callouts */
+.callout {
+  @apply my-4 rounded-lg border-l-4 p-4;
+}
+
+.callout-note {
+  @apply border-l-blue-500 bg-blue-50 dark:bg-blue-950/30;
+}
+.callout-warning {
+  @apply border-l-orange-500 bg-orange-50 dark:bg-orange-950/30;
+}
+.callout-danger,
+.callout-error {
+  @apply border-l-red-500 bg-red-50 dark:bg-red-950/30;
+}
+.callout-tip,
+.callout-success {
+  @apply border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/30;
+}
+.callout-info {
+  @apply border-l-cyan-500 bg-cyan-50 dark:bg-cyan-950/30;
+}
+.callout-question {
+  @apply border-l-violet-500 bg-violet-50 dark:bg-violet-950/30;
+}
+.callout-abstract,
+.callout-summary {
+  @apply border-l-slate-500 bg-slate-50 dark:bg-slate-950/30;
+}
+
+.callout-title {
+  @apply mb-2 flex items-center gap-2 font-semibold;
+}
+
+/* Stellar tag plugin compatibility - render as simple styled blocks */
+.stellar-note {
+  @apply my-4 rounded-lg border-l-4 border-l-blue-500 bg-blue-50 p-3 dark:bg-blue-950/30;
+}
+.stellar-image img {
+  @apply mx-auto my-4 rounded-lg;
+}
+.stellar-checkbox {
+  @apply flex items-center gap-2;
+}
+
+/* Prose overrides for dark mode */
+.dark .prose {
+  --tw-prose-body: var(--color-text);
+  --tw-prose-headings: var(--color-text);
+  --tw-prose-links: #60a5fa;
+  --tw-prose-bold: var(--color-text);
+  --tw-prose-code: var(--color-text);
+  --tw-prose-pre-bg: #1e293b;
+  --tw-prose-quotes: var(--color-text);
+  --tw-prose-quote-borders: #475569;
+}

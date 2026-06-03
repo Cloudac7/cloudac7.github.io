@@ -1,0 +1,30 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import Card from '@/components/ui/Card.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import { getTags } from '@/utils/posts'
+
+const tags = await getTags()
+---
+
+<BaseLayout title="标签" description="文章标签">
+  <div slot="sidebar">
+    <Profile />
+  </div>
+
+  <section>
+    <h1 class="mb-6 text-2xl font-bold">标签</h1>
+    <div class="flex flex-wrap gap-3">
+      {[...tags.entries()].map(([name, count]) => (
+        <Card>
+          <a href={`/tags/${encodeURIComponent(name)}/`} class="block px-5 py-3">
+            <span class="font-medium" style={`font-size: ${Math.min(0.875 + count * 0.04, 1.25)}rem`}>
+              {name}
+            </span>
+            <span class="ml-2 text-xs text-[var(--color-muted)]">{count}</span>
+          </a>
+        </Card>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

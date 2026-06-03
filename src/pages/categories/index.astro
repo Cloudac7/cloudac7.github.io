@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import Card from '@/components/ui/Card.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import { getCategories } from '@/utils/posts'
+
+const categories = await getCategories()
+---
+
+<BaseLayout title="分类" description="文章分类">
+  <div slot="sidebar">
+    <Profile />
+  </div>
+
+  <section>
+    <h1 class="mb-6 text-2xl font-bold">分类</h1>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {[...categories.entries()].map(([name, count]) => (
+        <Card>
+          <a href={`/categories/${encodeURIComponent(name)}/`} class="block p-5">
+            <h2 class="text-lg font-bold">{name}</h2>
+            <p class="mt-1 text-sm text-[var(--color-muted)]">{count} 篇文章</p>
+          </a>
+        </Card>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

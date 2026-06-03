@@ -1,0 +1,43 @@
+---
+import Navbar from '@/components/ui/Navbar.astro'
+import Footer from '@/components/ui/Footer.astro'
+import '@/styles/global.css'
+
+export interface Props {
+  title: string
+  description?: string
+  image?: string
+}
+
+const { title, description } = Astro.props
+const siteTitle = '奥尔特云'
+const pageTitle = title ? `${title} - ${siteTitle}` : siteTitle
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description ?? ''} />
+    <meta property="og:title" content={title || siteTitle} />
+    <meta property="og:description" content={description ?? ''} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteTitle} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
+  </head>
+  <body class="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <Navbar />
+    <div class="mx-auto max-w-6xl px-4 py-8 lg:grid lg:grid-cols-[300px_1fr] lg:gap-8">
+      <aside class="hidden lg:block">
+        <slot name="sidebar" />
+      </aside>
+      <main class="min-w-0">
+        <slot />
+      </main>
+    </div>
+    <Footer />
+  </body>
+</html>

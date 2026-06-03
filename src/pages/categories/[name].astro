@@ -1,0 +1,32 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import PostCard from '@/components/blog/PostCard.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import { getPostsByCategory, getCategories, getAllPosts } from '@/utils/posts'
+
+export async function getStaticPaths() {
+  const categories = await getCategories()
+  return [...categories.keys()].map(name => ({
+    params: { name },
+    props: { name },
+  }))
+}
+
+const { name } = Astro.props
+const posts = await getPostsByCategory(name)
+const allPosts = await getAllPosts()
+---
+
+<BaseLayout title={`分类：${name}`} description={`分类 ${name} 下的文章`}>
+  <div slot="sidebar">
+    <Profile />
+  </div>
+
+  <section>
+    <h1 class="mb-2 text-2xl font-bold">{name}</h1>
+    <p class="mb-6 text-sm text-[var(--color-muted)]">共 {posts.length} 篇文章</p>
+    <div class="space-y-4">
+      {posts.map(post => <PostCard post={post} />)}
+    </div>
+  </section>
+</BaseLayout>

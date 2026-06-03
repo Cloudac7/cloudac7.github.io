@@ -1,0 +1,37 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import Card from '@/components/ui/Card.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import { getAllPosts } from '@/utils/posts'
+import { getCollection } from 'astro:content'
+
+const topics = await getCollection('topics')
+const allPosts = await getAllPosts()
+
+function postCount(topicSlug: string): number {
+  return allPosts.filter(p => p.data.topic === topicSlug).length
+}
+---
+
+<BaseLayout title="专栏" description="专栏列表">
+  <div slot="sidebar">
+    <Profile />
+  </div>
+
+  <section>
+    <h1 class="mb-6 text-2xl font-bold">专栏</h1>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {topics.map(topic => (
+        <Card>
+          <a href={`/topics/${topic.slug}/`} class="block p-5">
+            <h2 class="text-lg font-bold">{topic.data.title}</h2>
+            {topic.data.description && (
+              <p class="mt-1 text-sm text-[var(--color-muted)]">{topic.data.description}</p>
+            )}
+            <p class="mt-2 text-xs text-[var(--color-muted)]">{postCount(topic.slug)} 篇文章</p>
+          </a>
+        </Card>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

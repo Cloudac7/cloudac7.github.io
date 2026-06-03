@@ -1,0 +1,43 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import PostCard from '@/components/blog/PostCard.astro'
+import Profile from '@/components/sidebar/Profile.astro'
+import { getPostsByTopic, getAllPosts } from '@/utils/posts'
+import { getCollection, type CollectionEntry } from 'astro:content'
+
+export async function getStaticPaths() {
+  const topics = await getCollection('topics')
+  return topics.map(t => ({
+    params: { topic: t.slug },
+    props: { topic: t },
+  }))
+}
+
+const { topic } = Astro.props as { topic: CollectionEntry<'topics'> }
+const posts = await getPostsByTopic(topic.slug)
+const allPosts = await getAllPosts()
+---
+
+<BaseLayout title={topic.data.title} description={topic.data.description}>
+  <div slot="sidebar">
+    <Profile />
+  </div>
+
+  <section>
+    <div class="mb-6">
+      {topic.data.image && (
+        <img src={topic.data.image} alt="" class="mb-4 h-40 w-full rounded-xl object-cover" loading="lazy" />
+      )}
+      <h1 class="text-2xl font-bold" style={topic.data.color ? { color: topic.data.color } : {}}>
+        {topic.data.title}
+      </h1>
+      {topic.data.description && (
+        <p class="mt-2 text-sm text-[var(--color-muted)]">{topic.data.description}</p>
+      )}
+      <p class="mt-1 text-xs text-[var(--color-muted)]">{posts.length} 篇文章</p>
+    </div>
+    <div class="space-y-4">
+      {posts.map(post => <PostCard post={post} />)}
+    </div>
+  </section>
+</BaseLayout>

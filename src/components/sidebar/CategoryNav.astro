@@ -1,0 +1,25 @@
+---
+export interface Props {
+  categories: Map<string, number>
+}
+
+const { categories } = Astro.props
+const entries = Array.from(categories.entries())
+---
+
+<div class="mb-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
+  <h3 class="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--color-muted)]">分类</h3>
+  <ul class="space-y-1.5">
+    {entries.map(([name, count]) => (
+      <li>
+        <a
+          href={`/categories/${encodeURIComponent(name)}/`}
+          class="flex items-center justify-between text-sm text-[var(--color-text)] transition-colors hover:text-primary-500"
+        >
+          <span>{name}</span>
+          <span class="rounded-full bg-[var(--color-border)]/50 px-2 py-0.5 text-xs text-[var(--color-muted)]">{count}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>
