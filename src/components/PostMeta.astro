@@ -1,0 +1,99 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
+
+interface Props {
+  class: string;
+  date: Date;
+  updated?: Date;
+  tags: string[];
+  category: string | null;
+  categories?: string[];
+  hideTagsForMobile?: boolean;
+  hideUpdateDate?: boolean;
+}
+const {
+  date,
+  updated,
+  tags,
+  category,
+  categories = [],
+  hideTagsForMobile = false,
+  hideUpdateDate = false,
+} = Astro.props;
+const className = Astro.props.class;
+
+// Merge single category and plural categories
+const allCats: string[] = [];
+if (categories.length > 0) {
+  allCats.push(...categories.map((c) => c.trim()).filter(Boolean));
+} else if (category) {
+  allCats.push(category.trim());
+}
+---
+
+<div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
+    <!-- publish date -->
+    <div class="flex items-center">
+        <div class="meta-icon">
+            <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl"></Icon>
+        </div>
+        <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(date)}</span>
+    </div>
+
+    <!-- update date -->
+    {!hideUpdateDate && updated && updated.getTime() !== date.getTime() && (
+        <div class="flex items-center">
+            <div class="meta-icon">
+                <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl"></Icon>
+            </div>
+            <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
+        </div>
+    )}
+
+    <!-- categories -->
+    <div class="flex items-center">
+        <div class="meta-icon">
+            <Icon name="material-symbols:book-2-outline-rounded" class="text-xl"></Icon>
+        </div>
+        <div class="flex flex-row flex-nowrap items-center">
+            {allCats.length > 0 ? (
+              allCats.map((cat, i) => (
+                <>
+                  {i > 0 && <span class="mx-1 text-[var(--meta-divider)] text-sm">/</span>}
+                  <a href={getCategoryUrl(cat)} aria-label={`View all posts in the ${cat} category`}
+                     class="link-lg transition text-50 text-sm font-medium
+                            hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
+                    {cat}
+                  </a>
+                </>
+              ))
+            ) : (
+              <span class="transition text-50 text-sm font-medium">{i18n(I18nKey.uncategorized)}</span>
+            )}
+        </div>
+    </div>
+
+    <!-- tags -->
+    <div class:list={["items-center", {"flex": !hideTagsForMobile, "hidden md:flex": hideTagsForMobile}]}>
+        <div class="meta-icon">
+            <Icon name="material-symbols:tag-rounded" class="text-xl"></Icon>
+        </div>
+        <div class="flex flex-row flex-nowrap items-center">
+            {(tags && tags.length > 0) && tags.map((tag, i) => (
+                <>
+                  {i > 0 && <span class="mx-1.5 text-[var(--meta-divider)] text-sm">/</span>}
+                  <a href={getTagUrl(tag)} aria-label={`View all posts with the ${tag.trim()} tag`}
+                     class="link-lg transition text-50 text-sm font-medium
+                            hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
+                    {tag.trim()}
+                  </a>
+                </>
+            ))}
+            {!(tags && tags.length > 0) && <span class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</span>}
+        </div>
+    </div>
+</div>

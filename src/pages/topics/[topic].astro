@@ -1,43 +1,44 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro'
-import PostCard from '@/components/blog/PostCard.astro'
-import Profile from '@/components/sidebar/Profile.astro'
-import { getPostsByTopic, getAllPosts } from '@/utils/posts'
-import { getCollection, type CollectionEntry } from 'astro:content'
+import { getCollection } from "astro:content";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
 
 export async function getStaticPaths() {
-  const topics = await getCollection('topics')
-  return topics.map(t => ({
+  const topics = await getCollection("topics");
+  return topics.map((t) => ({
     params: { topic: t.slug },
     props: { topic: t },
-  }))
+  }));
 }
 
-const { topic } = Astro.props as { topic: CollectionEntry<'topics'> }
-const posts = await getPostsByTopic(topic.slug)
-const allPosts = await getAllPosts()
+const { topic } = Astro.props;
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+const topicPosts = allPosts
+  .filter((p) => p.data.topic === topic.slug)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<BaseLayout title={topic.data.title} description={topic.data.description}>
-  <div slot="sidebar">
-    <Profile />
-  </div>
-
-  <section>
-    <div class="mb-6">
-      {topic.data.image && (
-        <img src={topic.data.image} alt="" class="mb-4 h-40 w-full rounded-xl object-cover" loading="lazy" />
-      )}
-      <h1 class="text-2xl font-bold" style={topic.data.color ? { color: topic.data.color } : {}}>
-        {topic.data.title}
-      </h1>
+<MainGridLayout title={topic.data.title} description={topic.data.description}>
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <h2 class="text-2xl font-bold mb-2 text-black/90 dark:text-white/90">{topic.data.title}</h2>
       {topic.data.description && (
-        <p class="mt-2 text-sm text-[var(--color-muted)]">{topic.data.description}</p>
+        <p class="text-sm text-black/50 dark:text-white/50 mb-4">{topic.data.description}</p>
       )}
-      <p class="mt-1 text-xs text-[var(--color-muted)]">{posts.length} 篇文章</p>
+      <p class="text-xs text-black/30 dark:text-white/30 mb-6">{topicPosts.length} 篇文章</p>
+
+      <div class="space-y-3">
+        {topicPosts.map(post => (
+          <a href={`/posts/${post.slug}/`} class="btn-card rounded-xl p-4 block">
+            <h3 class="font-bold text-black/80 dark:text-white/80">{post.data.title}</h3>
+            {post.data.description && (
+              <p class="mt-1 text-sm text-black/50 dark:text-white/50 line-clamp-2">{post.data.description}</p>
+            )}
+            <time class="mt-2 text-xs text-black/30 dark:text-white/30 block">
+              {post.data.date.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}
+            </time>
+          </a>
+        ))}
+      </div>
     </div>
-    <div class="space-y-4">
-      {posts.map(post => <PostCard post={post} />)}
-    </div>
-  </section>
-</BaseLayout>
+  </div>
+</MainGridLayout>

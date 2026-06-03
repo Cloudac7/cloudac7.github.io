@@ -1,32 +1,50 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro'
-import PostCard from '@/components/blog/PostCard.astro'
-import Profile from '@/components/sidebar/Profile.astro'
-import { getPostsByTag, getTags, getAllPosts } from '@/utils/posts'
+import { getCollection } from "astro:content";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
 
 export async function getStaticPaths() {
-  const tags = await getTags()
-  return [...tags.keys()].map(tag => ({
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  const tagSet = new Set<string>();
+
+  for (const post of posts) {
+    for (const tag of post.data.tags ?? []) {
+      if (tag) tagSet.add(tag.trim());
+    }
+  }
+
+  return [...tagSet].map((tag) => ({
     params: { tag },
     props: { tag },
-  }))
+  }));
 }
 
-const { tag } = Astro.props
-const posts = await getPostsByTag(tag)
-const allPosts = await getAllPosts()
+const { tag } = Astro.props;
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+
+const tagPosts = allPosts
+  .filter((p) => p.data.tags?.some((t: string) => t.trim() === tag))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<BaseLayout title={`标签：${tag}`} description={`标签 ${tag} 下的文章`}>
-  <div slot="sidebar">
-    <Profile />
-  </div>
+<MainGridLayout title={`标签：${tag}`}>
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <h2 class="text-2xl font-bold mb-2 text-black/90 dark:text-white/90">#{tag}</h2>
+      <p class="text-xs text-black/30 dark:text-white/30 mb-6">{tagPosts.length} 篇文章</p>
 
-  <section>
-    <h1 class="mb-2 text-2xl font-bold">#{tag}</h1>
-    <p class="mb-6 text-sm text-[var(--color-muted)]">共 {posts.length} 篇文章</p>
-    <div class="space-y-4">
-      {posts.map(post => <PostCard post={post} />)}
+      <div class="space-y-3">
+        {tagPosts.map(post => (
+          <a href={`/posts/${post.slug}/`} class="btn-card rounded-xl p-4 block">
+            <h3 class="font-bold text-black/80 dark:text-white/80">{post.data.title}</h3>
+            {post.data.description && (
+              <p class="mt-1 text-sm text-black/50 dark:text-white/50 line-clamp-2">{post.data.description}</p>
+            )}
+            <time class="mt-2 text-xs text-black/30 dark:text-white/30 block">
+              {post.data.date.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}
+            </time>
+          </a>
+        ))}
+      </div>
     </div>
-  </section>
-</BaseLayout>
+  </div>
+</MainGridLayout>

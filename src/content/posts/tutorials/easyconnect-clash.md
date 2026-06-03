@@ -2,11 +2,10 @@
 title: "新时代的快乐科研：WSL2+Docker+EasyConnect+Clash"
 date: 2022-03-23
 updated: 2022-03-23
-image: docker.jpg
 categories:
   - Tricks
   - Containerize Your Life
-banner: /images/docker.jpg
+image: /images/docker.jpg
 ---
 
 > 容器化拯救世界。——沃兹基硕德

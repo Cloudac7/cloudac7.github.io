@@ -1,32 +1,57 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro'
-import PostCard from '@/components/blog/PostCard.astro'
-import Profile from '@/components/sidebar/Profile.astro'
-import { getPostsByCategory, getCategories, getAllPosts } from '@/utils/posts'
+import { getCollection } from "astro:content";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
 
 export async function getStaticPaths() {
-  const categories = await getCategories()
-  return [...categories.keys()].map(name => ({
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  const catSet = new Set<string>();
+
+  for (const post of posts) {
+    // Try categories[] first, then fall back to category
+    const cats = post.data.categories?.length ? post.data.categories : (post.data.category ? [post.data.category] : []);
+    for (const c of cats) {
+      if (c) catSet.add(c.trim());
+    }
+  }
+
+  return [...catSet].map((name) => ({
     params: { name },
     props: { name },
-  }))
+  }));
 }
 
-const { name } = Astro.props
-const posts = await getPostsByCategory(name)
-const allPosts = await getAllPosts()
+const { name } = Astro.props;
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+
+// Filter posts by matching category field or categories array
+const categoryPosts = allPosts
+  .filter((p) => {
+    if (p.data.categories?.some((c: string) => c.trim() === name)) return true;
+    if (p.data.category?.trim() === name) return true;
+    return false;
+  })
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<BaseLayout title={`分类：${name}`} description={`分类 ${name} 下的文章`}>
-  <div slot="sidebar">
-    <Profile />
-  </div>
+<MainGridLayout title={`分类：${name}`}>
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <h2 class="text-2xl font-bold mb-2 text-black/90 dark:text-white/90">{name}</h2>
+      <p class="text-xs text-black/30 dark:text-white/30 mb-6">{categoryPosts.length} 篇文章</p>
 
-  <section>
-    <h1 class="mb-2 text-2xl font-bold">{name}</h1>
-    <p class="mb-6 text-sm text-[var(--color-muted)]">共 {posts.length} 篇文章</p>
-    <div class="space-y-4">
-      {posts.map(post => <PostCard post={post} />)}
+      <div class="space-y-3">
+        {categoryPosts.map(post => (
+          <a href={`/posts/${post.slug}/`} class="btn-card rounded-xl p-4 block">
+            <h3 class="font-bold text-black/80 dark:text-white/80">{post.data.title}</h3>
+            {post.data.description && (
+              <p class="mt-1 text-sm text-black/50 dark:text-white/50 line-clamp-2">{post.data.description}</p>
+            )}
+            <time class="mt-2 text-xs text-black/30 dark:text-white/30 block">
+              {post.data.date.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}
+            </time>
+          </a>
+        ))}
+      </div>
     </div>
-  </section>
-</BaseLayout>
+  </div>
+</MainGridLayout>

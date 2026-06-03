@@ -1,77 +1,154 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro'
-import PostMeta from '@/components/blog/PostMeta.astro'
-import Badge from '@/components/ui/Badge.astro'
-import Profile from '@/components/sidebar/Profile.astro'
-import RecentPosts from '@/components/sidebar/RecentPosts.astro'
-import { getAllPosts, getCategories, getTags } from '@/utils/posts'
-import { getCollection, type CollectionEntry } from 'astro:content'
+import path from "node:path";
+import License from "@components/misc/License.astro";
+import Markdown from "@components/misc/Markdown.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getCollection } from "astro:content";
+import { getSortedPosts } from "@utils/content-utils";
+import { getDir, getPostUrlBySlug } from "@utils/url-utils";
+import { Icon } from "astro-icon/components";
+import { licenseConfig } from "src/config";
+import ImageWrapper from "../../components/misc/ImageWrapper.astro";
+import PostMetadata from "../../components/PostMeta.astro";
+import { profileConfig, siteConfig } from "../../config";
+import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
-  const posts = await getAllPosts()
-  return posts.map(post => ({
-    params: { slug: post.slug },
-    props: { post },
-  }))
+	const blogEntries = await getSortedPosts();
+	return blogEntries.map((entry) => ({
+		params: { slug: entry.slug },
+		props: { entry },
+	}));
 }
 
-const { post } = Astro.props as { post: CollectionEntry<'posts'> }
-const data = post.data
-const { Content } = await post.render()
+const { entry } = Astro.props;
+const { Content, headings } = await entry.render();
 
-const allPosts = await getAllPosts()
-const categories = await getCategories()
-const tags = await getTags()
+const { remarkPluginFrontmatter } = await entry.render();
 
 // Resolve topic title from topics collection
-const allTopics = await getCollection('topics')
-const topicMap = new Map(allTopics.map(t => [t.slug, t.data.title]))
-const topicTitle = data.topic ? (topicMap.get(data.topic) ?? data.topic) : null
+const allTopics = await getCollection("topics");
+const topicMap = new Map(allTopics.map((t) => [t.slug, t.data.title]));
+const topicTitle = entry.data.topic ? (topicMap.get(entry.data.topic) ?? entry.data.topic) : null;
 
-const currentIndex = allPosts.findIndex(p => p.slug === post.slug)
-const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null
-const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: entry.data.title,
+	description: entry.data.description || entry.data.title,
+	keywords: entry.data.tags,
+	author: {
+		"@type": "Person",
+		name: profileConfig.name,
+		url: Astro.site,
+	},
+	datePublished: formatDateToYYYYMMDD(entry.data.date),
+	inLanguage: entry.data.lang
+		? entry.data.lang.replace("_", "-")
+		: siteConfig.lang.replace("_", "-"),
+	// TODO include cover image here
+};
 ---
+<MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings}>
+    <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+        <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
+            {}
+        ]}>
+            <!-- word count and reading time -->
+            <div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+                <div class="flex flex-row items-center">
+                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                        <Icon name="material-symbols:notes-rounded"></Icon>
+                    </div>
+                    <div class="text-sm">{remarkPluginFrontmatter.words} {" " + i18n(I18nKey.wordsCount)}</div>
+                </div>
+                <div class="flex flex-row items-center">
+                    <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+                        <Icon name="material-symbols:schedule-outline-rounded"></Icon>
+                    </div>
+                    <div class="text-sm">
+                        {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
+                    </div>
+                </div>
+            </div>
 
-<BaseLayout title={data.title} description={data.description}>
-  <div slot="sidebar">
-    <Profile />
-    <RecentPosts posts={allPosts} />
-  </div>
+            <!-- title -->
+            <div class="relative onload-animation">
+                <div
+                    data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
+                    class="transition w-full block font-bold mb-3
+                    text-3xl md:text-[2.25rem]/[2.75rem]
+                    text-black/90 dark:text-white/90
+                    md:before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
+                    before:absolute before:top-[0.75rem] before:left-[-1.125rem]
+                ">
+                    {entry.data.title}
+                </div>
+            </div>
 
-  <article>
-    {data.banner && (
-      <img src={data.banner} alt="" class="mb-6 h-48 w-full rounded-xl object-cover" />
-    )}
-    <h1 class="mb-4 text-3xl font-bold leading-tight">{data.title}</h1>
+            <!-- metadata -->
+            <div class="onload-animation">
+                <PostMetadata
+                        class="mb-5"
+                        date={entry.data.date}
+                        updated={entry.data.updated}
+                        tags={entry.data.tags}
+                        category={entry.data.category}
+                        categories={entry.data.categories}
+                ></PostMetadata>
+                {!entry.data.image && <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div>}
+            </div>
 
-    <PostMeta post={post} />
+            <!-- always show cover as long as it has one -->
 
-    <div class="prose prose-lg max-w-none dark:prose-invert">
-      <Content />
+            {entry.data.image &&
+                <ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(entry.id))} class="mb-8 rounded-xl banner-container onload-animation"/>
+            }
+
+
+            <Markdown class="mb-6 markdown-content onload-animation">
+                <Content />
+            </Markdown>
+
+            {licenseConfig.enable && <License title={entry.data.title} slug={entry.slug} pubDate={entry.data.date} class="mb-6 rounded-xl license-container onload-animation"></License>}
+
+            {entry.data.topic && topicTitle && (
+              <div class="mt-4 rounded-xl border border-[var(--line-divider)] bg-black/[0.02] dark:bg-white/[0.02] p-4 onload-animation">
+                <p class="text-sm text-black/50 dark:text-white/50">
+                  属于专栏：
+                  <a href={`/topics/${encodeURIComponent(entry.data.topic)}/`} class="font-medium text-[var(--primary)] hover:underline">
+                    {topicTitle}
+                  </a>
+                </p>
+              </div>
+            )}
+
+        </div>
     </div>
 
-    {data.topic && topicTitle && (
-      <div class="mt-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-        <p class="text-sm text-[var(--color-muted)]">
-          属于专栏：<a href={`/topics/${encodeURIComponent(data.topic)}/`} class="font-medium text-primary-500 hover:underline">{topicTitle}</a>
-        </p>
-      </div>
-    )}
+    <div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
+        <a href={entry.data.nextSlug ? getPostUrlBySlug(entry.data.nextSlug) : "#"}
+           class:list={["w-full font-bold overflow-hidden active:scale-95", {"pointer-events-none": !entry.data.nextSlug}]}>
+            {entry.data.nextSlug && <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-start gap-4" >
+                <Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-[var(--primary)]" />
+                <div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
+                    {entry.data.nextTitle}
+                </div>
+            </div>}
+        </a>
 
-    <div class="mt-8 flex items-center justify-between border-t border-[var(--color-border)] pt-6">
-      {prev ? (
-        <a href={`/posts/${prev.slug}/`} class="group max-w-[45%]">
-          <span class="text-xs text-[var(--color-muted)]">← 上一篇</span>
-          <p class="mt-1 text-sm font-medium text-[var(--color-text)] transition-colors group-hover:text-primary-500">{prev.data.title}</p>
+        <a href={entry.data.prevSlug ? getPostUrlBySlug(entry.data.prevSlug) : "#"}
+           class:list={["w-full font-bold overflow-hidden active:scale-95", {"pointer-events-none": !entry.data.prevSlug}]}>
+            {entry.data.prevSlug && <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-end gap-4">
+                <div class="overflow-hidden transition overflow-ellipsis whitespace-nowrap max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">
+                    {entry.data.prevTitle}
+                </div>
+                <Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-[var(--primary)]" />
+            </div>}
         </a>
-      ) : <div />}
-      {next ? (
-        <a href={`/posts/${next.slug}/`} class="group max-w-[45%] text-right">
-          <span class="text-xs text-[var(--color-muted)]">下一篇 →</span>
-          <p class="mt-1 text-sm font-medium text-[var(--color-text)] transition-colors group-hover:text-primary-500">{next.data.title}</p>
-        </a>
-      ) : <div />}
     </div>
-  </article>
-</BaseLayout>
+
+</MainGridLayout>

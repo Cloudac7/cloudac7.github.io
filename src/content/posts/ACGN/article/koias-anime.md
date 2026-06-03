@@ -1,10 +1,8 @@
 ---
 title: "星空、大地与日常的浪漫——从《恋爱小行星》说起"
-image: cover.jpg
 date: 2020-03-28
 updated: 2020-03-28
-cover: /images/koias-anime.jpg
-banner: /images/koias-anime.jpg
+image: /images/koias-anime.jpg
 categories:
   - ACGN
 ---

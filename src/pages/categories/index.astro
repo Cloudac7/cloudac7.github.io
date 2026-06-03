@@ -1,28 +1,45 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro'
-import Card from '@/components/ui/Card.astro'
-import Profile from '@/components/sidebar/Profile.astro'
-import { getCategories } from '@/utils/posts'
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
 
-const categories = await getCategories()
+const allPosts = await import("astro:content").then((m) =>
+  m.getCollection("posts", ({ data }) => !data.draft)
+);
+
+const count: Record<string, number> = {};
+for (const post of allPosts) {
+  const cats = post.data.categories?.length
+    ? post.data.categories
+    : post.data.category
+      ? [post.data.category]
+      : [];
+  for (const c of cats) {
+    const name = c.trim();
+    if (name) count[name] = (count[name] ?? 0) + 1;
+  }
+}
+
+const entries = Object.entries(count).sort(([a], [b]) =>
+  a.toLowerCase().localeCompare(b.toLowerCase())
+);
 ---
 
-<BaseLayout title="分类" description="文章分类">
-  <div slot="sidebar">
-    <Profile />
-  </div>
-
-  <section>
-    <h1 class="mb-6 text-2xl font-bold">分类</h1>
-    <div class="grid gap-4 sm:grid-cols-2">
-      {[...categories.entries()].map(([name, count]) => (
-        <Card>
-          <a href={`/categories/${encodeURIComponent(name)}/`} class="block p-5">
-            <h2 class="text-lg font-bold">{name}</h2>
-            <p class="mt-1 text-sm text-[var(--color-muted)]">{count} 篇文章</p>
+<MainGridLayout title="分类">
+  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <h2 class="text-2xl font-bold mb-6 text-black/90 dark:text-white/90">分类</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {entries.map(([name, cnt]) => (
+          <a
+            href={`/categories/${encodeURIComponent(name)}/`}
+            class="btn-card rounded-2xl p-5 block"
+          >
+            <h3 class="text-lg font-bold text-black/80 dark:text-white/80">{name}</h3>
+            <p class="mt-1 text-sm text-black/50 dark:text-white/50">
+              {cnt} 篇文章
+            </p>
           </a>
-        </Card>
-      ))}
+        ))}
+      </div>
     </div>
-  </section>
-</BaseLayout>
+  </div>
+</MainGridLayout>
