@@ -1,24 +1,24 @@
 ---
 const menu = [
   { href: '/', label: '首页' },
-  { href: '/archives/', label: '归档' },
   { href: '/categories/', label: '分类' },
-  { href: '/tags/', label: '标签' },
+  { href: '/topics/', label: '专栏' },
+  { href: '/archives/', label: '归档' },
   { href: '/about/', label: '关于' },
 ]
 ---
 
-<header class="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]/80 backdrop-blur-sm">
+<header class="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
   <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
     <a href="/" class="text-xl font-bold tracking-tight hover:text-primary-500">
       奥尔特云
     </a>
-    <ul class="flex items-center gap-6">
+    <ul class="flex items-center gap-1">
       {menu.map(item => (
         <li>
           <a
             href={item.href}
-            class="text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+            class="rounded-lg px-3 py-2 text-sm text-[var(--color-muted)] transition-colors hover:bg-[var(--color-border)] hover:text-[var(--color-text)]"
           >
             {item.label}
           </a>

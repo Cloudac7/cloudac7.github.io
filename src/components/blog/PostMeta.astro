@@ -21,8 +21,6 @@ const { data } = post
       </span>
     </>
   )}
-  <span>·</span>
-  <span>{data.type === 'story' ? '同人' : '技术'}</span>
   <div class="flex flex-wrap gap-1.5">
     {data.categories?.map(cat => (
       <Badge href={`/categories/${encodeURIComponent(cat)}/`}>{cat}</Badge>

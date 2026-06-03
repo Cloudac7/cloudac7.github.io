@@ -23,6 +23,11 @@ const allPosts = await getAllPosts()
 const categories = await getCategories()
 const tags = await getTags()
 
+// Resolve topic title from topics collection
+const allTopics = await getCollection('topics')
+const topicMap = new Map(allTopics.map(t => [t.slug, t.data.title]))
+const topicTitle = data.topic ? (topicMap.get(data.topic) ?? data.topic) : null
+
 const currentIndex = allPosts.findIndex(p => p.slug === post.slug)
 const prev = currentIndex > 0 ? allPosts[currentIndex - 1] : null
 const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
@@ -46,10 +51,10 @@ const next = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : n
       <Content />
     </div>
 
-    {data.topic && (
+    {data.topic && topicTitle && (
       <div class="mt-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <p class="text-sm text-[var(--color-muted)]">
-          属于专栏：<a href={`/topics/${encodeURIComponent(data.topic)}/`} class="font-medium text-primary-500 hover:underline">{data.topic}</a>
+          属于专栏：<a href={`/topics/${encodeURIComponent(data.topic)}/`} class="font-medium text-primary-500 hover:underline">{topicTitle}</a>
         </p>
       </div>
     )}

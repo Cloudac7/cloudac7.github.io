@@ -5,7 +5,7 @@ export async function GET(context) {
   const posts = await getAllPosts()
   return rss({
     title: '奥尔特云 | Cloudac7',
-    description: 'Cloudac7 的个人博客 — 代码 · 文字 · 胡思乱想',
+    description: 'Cloudac7 的个人博客 — オールトの雲',
     site: context.site,
     items: posts.map(post => ({
       title: post.data.title,

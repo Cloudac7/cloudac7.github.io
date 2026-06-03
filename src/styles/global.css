@@ -82,3 +82,19 @@
   --tw-prose-quotes: var(--color-text);
   --tw-prose-quote-borders: #475569;
 }
+
+/* Highlighter link effect */
+.prose a {
+  color: var(--tw-prose-links);
+  text-decoration: none;
+  background: linear-gradient(0deg, var(--color-border), var(--color-border)) no-repeat left 100%/100% 2px;
+  transition: background-size 0.3s ease;
+}
+
+.prose a:hover {
+  background: linear-gradient(0deg, var(--link-highlight, rgba(96,165,250,0.2)), var(--link-highlight, rgba(96,165,250,0.2))) no-repeat left 100%/100% 100%;
+}
+
+.dark .prose a {
+  --link-highlight: rgba(129,140,248,0.25);
+}
