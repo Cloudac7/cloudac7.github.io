@@ -158,11 +158,49 @@ font-family: "LXGW WenKai", Roboto, system-ui, sans-serif;
 | 图片灯箱 | 无 | PhotoSwipe |
 | 静态搜索 | 无 | Pagefind |
 
+## 部署迁移：GitHub Actions → Vercel
+
+为实现静态和动态页面混合渲染，站点的部署流程从 GitHub Actions + GitHub Pages 迁移至 Vercel。
+
+### 配置变更
+
+将 Astro 的输出模式切换为 server 模式：
+
+```diff
++ output: "server",
+  adapter: vercel(),
+```
+
+同时将所有现有页面添加显式的静态预渲染声明：
+
+```astro
+---
+export const prerender = true;
+---
+```
+
+这样大部分页面在构建时仍生成静态 HTML，只有标记为 `prerender = false` 的动态路由走 Vercel SSR。
+
+### CI/CD 调整
+
+GitHub Actions 去掉了自动部署到 gh-pages 的步骤，只保留构建检查，生产部署交由 Vercel：
+
+```diff
+  on:
+    push:
+      branches: [master]
+-     - Deploy to GitHub Pages
+```
+
+### 注意事项
+
+- **构建产物**：server 模式下 `dist/` 同时包含静态文件和 SSR 函数打包结果，`.vercel/output/` 由适配器自动生成
+- **Pagefind 索引**：构建命令仍包含 `pagefind --site dist`，只会索引静态页面，SSR 路由不会出现在搜索结果中
+- **环境变量**：本地开发用 `.env` 文件，生产环境在 Vercel Dashboard 设置，均不提交到仓库
+
 ## 遗留问题
 
-- [ ] 旧 URL 301 重定向
 - [ ] 更多文章的标签补充
-- [ ] 移动端 sidebar 展示优化
 
 ## 总结
 
