@@ -1,13 +1,14 @@
-name: Deploy to GitHub Pages
+name: Build Check
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    name: Build and Deploy
+    name: Build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,12 +21,3 @@ jobs:
         run: npm ci
       - name: Build Astro site
         run: npm run build
-      - name: Remove /public prefix from image paths
-        run: find dist -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' \) -exec sed -i 's|/public/images|/images|g' {} \;
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: dist
-          clean: true
-          single-commit: true
