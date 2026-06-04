@@ -1,16 +1,5 @@
 /* ===== Cloudac7 custom styles ===== */
 
-/* Highlighter link effect */
-.custom-md a {
-  color: var(--primary);
-  text-decoration: none;
-  background: linear-gradient(0deg, var(--line-color), var(--line-color)) no-repeat left 100%/100% 2px;
-  transition: background-size 0.3s ease;
-}
-.custom-md a:hover {
-  background: linear-gradient(0deg, var(--link-underline), var(--link-underline)) no-repeat left 100%/100% 100%;
-}
-
 /* Profile flip effect */
 .profile-flip {
   perspective: 300px;
@@ -39,3 +28,31 @@
 .profile-flip-back {
   transform: rotateX(180deg);
 }
+
+/* Liquid glass navbar — rounded card, sticky top */
+.liquid-glass-nav {
+  background: color-mix(in oklch, var(--card-bg) 90%, transparent);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 2px 24px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* LXGW WenKai: border-bottom adds 1px to box height, shifting subsequent text.
+   Replace with box-shadow which doesn't affect the box model. */
+.custom-md a:not(.no-styling):hover,
+.custom-md a:not(.no-styling):active {
+  border-bottom: none !important;
+  box-shadow: 0 1px 0 0 var(--link-hover);
+}
+
+.dark .liquid-glass-nav {
+  background: color-mix(in oklch, var(--card-bg) 60%, transparent);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 2px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+

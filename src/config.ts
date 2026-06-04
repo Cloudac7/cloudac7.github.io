@@ -9,6 +9,7 @@ import { LinkPreset } from "./types/config"
 
 export const siteConfig: SiteConfig = {
   title: "奥尔特云",
+  navtitle: "オールトの雲",
   subtitle: "Cloudac7",
   lang: "zh_CN",
   themeColor: {
@@ -29,7 +30,9 @@ export const siteConfig: SiteConfig = {
     enable: true,
     depth: 2,
   },
-  favicon: [],
+  favicon: [
+    { src: "/favicon.svg" },
+  ],
 }
 
 export const navBarConfig: NavBarConfig = {
@@ -60,6 +63,16 @@ export const profileConfig: ProfileConfig = {
       name: "GitHub",
       icon: "fa6-brands:github",
       url: "https://github.com/Cloudac7",
+    },
+    {
+      name: "Bilibili",
+      icon: "fa6-brands:bilibili",
+      url: "https://space.bilibili.com/3025889/",
+    },
+    {
+      name: "Twitter",
+      icon: "fa6-brands:x-twitter",
+      url: "https://twitter.com/Cloudac7_Canoe/",
     },
   ],
 }
