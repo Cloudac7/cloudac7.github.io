@@ -20,6 +20,8 @@ jobs:
         run: npm ci
       - name: Build Astro site
         run: npm run build
+      - name: Remove /public prefix from image paths
+        run: find dist -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' \) -exec sed -i 's|/public/images|/images|g' {} \;
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
