@@ -31,6 +31,7 @@ export default defineConfig({
 	site: "https://cloudac7.github.io/",
 	base: "/",
 	trailingSlash: "always",
+	output: "server",
 	integrations: [
 		tailwind({
 			nesting: true,

@@ -1,0 +1,74 @@
+---
+import type { KetsuArticleMeta } from "../../utils/ketsu-github";
+import PostMetadata from "@components/PostMeta.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  class?: string;
+  style?: string;
+  article: KetsuArticleMeta;
+}
+
+const { article, style } = Astro.props;
+const className = Astro.props.class;
+const url = `/ketsu/${encodeURIComponent(article.slug)}/`;
+
+// Calcaulte reading time from word count (matches PostCard's remarkReadingTime behaviour)
+const minutes = Math.max(1, Math.round(article.wordCount / 100));
+const words = article.wordCount;
+---
+
+<div
+  class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]}
+  style={style}
+>
+  <div class="pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative w-full md:w-[calc(100%_-_52px_-_12px)]">
+    <!-- title -->
+    <a href={url}
+       class="transition group w-full block font-bold mb-3 text-xl md:text-2xl text-black/90 dark:text-white/90
+            hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
+            active:text-[var(--title-active)] dark:active:text-[var(--title-active)]
+            before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
+            before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block"
+    >
+      {article.title}
+      <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" />
+      <Icon class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded" />
+    </a>
+
+    <!-- metadata -->
+    <PostMetadata
+      class="mb-4"
+      date={new Date(article.date)}
+      tags={article.tags}
+      category={article.category}
+      categories={article.categories}
+    ></PostMetadata>
+
+    <!-- description -->
+    {article.description && (
+      <p class="transition text-black/60 dark:text-white/60 text-base line-clamp-2 md:line-clamp-1 pr-4 mb-3.5">
+        {article.description}
+      </p>
+    )}
+
+    <!-- word count / reading time -->
+    <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
+      <div>{words} {i18n(I18nKey.wordsCount)}</div>
+      <div>|</div>
+      <div>{minutes} {i18n(minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}</div>
+    </div>
+  </div>
+
+  <!-- enter button -->
+  <a href={url} aria-label={article.title} class="!hidden md:!flex btn-regular w-[3.25rem]
+       absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)]
+       hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95">
+    <Icon name="material-symbols:chevron-right-rounded"
+          class="transition text-[var(--primary)] text-4xl mx-auto" />
+  </a>
+</div>
+
+<div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>

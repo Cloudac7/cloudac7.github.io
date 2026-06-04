@@ -6,3 +6,4 @@ Thumbs.db
 .DS_Store
 .obsidian
 .vercel
+.env

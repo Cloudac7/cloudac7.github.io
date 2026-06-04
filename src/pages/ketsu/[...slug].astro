@@ -1,0 +1,142 @@
+---
+export const prerender = false;
+
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import Markdown from "@components/misc/Markdown.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import PostMetadata from "@components/PostMeta.astro";
+import { Icon } from "astro-icon/components";
+import { isAuthenticated, clearAuthCookie } from "../../utils/ketsu-auth";
+import { fetchArticle } from "../../utils/ketsu-github";
+import MarkdownIt from "markdown-it";
+
+const slug = Astro.params.slug;
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+
+// --- Logout ---
+if (slug === "logout") {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: "/ketsu/",
+      "Set-Cookie": clearAuthCookie(),
+    },
+  });
+}
+
+// --- Auth check ---
+if (!isAuthenticated(Astro.request)) {
+  return Astro.redirect("/ketsu/", 302);
+}
+
+// --- Fetch article ---
+if (!slug) {
+  return Astro.redirect("/ketsu/", 302);
+}
+
+let article: Awaited<ReturnType<typeof fetchArticle>>;
+let fetchError: string | null = null;
+
+try {
+  article = await fetchArticle(slug);
+} catch (e) {
+  fetchError = "无法加载文章。请稍后再试。";
+  if (e instanceof Error) console.error("Ketsu fetch error:", e.message);
+}
+
+if (!article && !fetchError) {
+  fetchError = "文章未找到。";
+}
+
+const title = article?.title || "Ketsu";
+const renderedContent = article ? md.render(article.content) : "";
+const minutes = article ? Math.max(1, Math.round(article.wordCount / 100)) : 0;
+const words = article?.wordCount ?? 0;
+---
+
+<MainGridLayout title={title} description={article?.description}>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  {fetchError ? (
+    <!-- Error state -->
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+      <div class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+        <h2 class="text-2xl font-bold mb-4 text-black/90 dark:text-white/90">出错了</h2>
+        <p class="text-black/50 dark:text-white/50">{fetchError}</p>
+        <a href="/ketsu/" class="mt-4 inline-block text-[var(--primary)] hover:underline">← 返回文章列表</a>
+      </div>
+    </div>
+  ) : (
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+      <div id="post-container" class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+
+        <!-- back link -->
+        <div class="mb-4 onload-animation">
+          <a href="/ketsu/" class="text-sm text-[var(--primary)] hover:underline transition flex items-center gap-1">
+            <Icon name="material-symbols:arrow-back-rounded" class="text-lg" />
+            返回列表
+          </a>
+        </div>
+
+        <!-- word count and reading time -->
+        <div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+          <div class="flex flex-row items-center">
+            <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+              <Icon name="material-symbols:notes-rounded"></Icon>
+            </div>
+            <div class="text-sm">{words} {i18n(I18nKey.wordsCount)}</div>
+          </div>
+          <div class="flex flex-row items-center">
+            <div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+              <Icon name="material-symbols:schedule-outline-rounded"></Icon>
+            </div>
+            <div class="text-sm">
+              {minutes} {i18n(minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
+            </div>
+          </div>
+        </div>
+
+        <!-- title -->
+        <div class="relative onload-animation">
+          <div
+            data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
+            class="transition w-full block font-bold mb-3
+                   text-3xl md:text-[2.25rem]/[2.75rem]
+                   text-black/90 dark:text-white/90
+                   md:before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
+                   before:absolute before:top-[0.75rem] before:left-[-1.125rem]"
+          >
+            {article!.title}
+          </div>
+        </div>
+
+        <!-- metadata -->
+        <div class="onload-animation">
+          <PostMetadata
+            class="mb-5"
+            date={new Date(article!.date)}
+            tags={article!.tags}
+            category={article!.category}
+            categories={article!.categories}
+          />
+          <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div>
+        </div>
+
+        <!-- description -->
+        {article!.description && (
+          <div class="onload-animation mb-5">
+            <div class="p-4 rounded-xl bg-black/[0.03] dark:bg-white/[0.03] border-l-2 border-[var(--primary)]">
+              <p class="text-black/60 dark:text-white/60 text-sm">{article!.description}</p>
+            </div>
+          </div>
+        )}
+
+        <!-- content -->
+        <Markdown class="mb-6 markdown-content onload-animation">
+          <Fragment set:html={renderedContent} />
+        </Markdown>
+      </div>
+    </div>
+  )}
+</MainGridLayout>
