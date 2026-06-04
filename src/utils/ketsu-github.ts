@@ -59,6 +59,13 @@ function getHeaders(): Record<string, string> {
   };
 }
 
+/** Ensure slug contains no path traversal components. */
+export function sanitizeSlug(slug: string): string {
+  const clean = slug.replace(/\.\./g, "").replace(/[/\\]/g, "");
+  if (clean !== slug) throw new Error("Invalid slug");
+  return clean;
+}
+
 /** Count words in text — CJK chars count individually, English words split by spaces. */
 function countWords(text: string): number {
   const cjk = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g) || []).length;
@@ -180,6 +187,7 @@ export async function fetchArticleList(): Promise<KetsuArticleMeta[]> {
  * Returns null if the file does not exist.
  */
 export async function fetchArticle(slug: string): Promise<KetsuArticle | null> {
+  sanitizeSlug(slug);
   const repo = getRepo();
   const response = await fetch(`${GITHUB_API}/repos/${repo}/contents/posts/${slug}.md`, {
     headers: getHeaders(),

@@ -8,7 +8,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import PostMetadata from "@components/PostMeta.astro";
 import { Icon } from "astro-icon/components";
 import { isAuthenticated, clearAuthCookie } from "../../utils/ketsu-auth";
-import { fetchArticle } from "../../utils/ketsu-github";
+import { fetchArticle, sanitizeSlug } from "../../utils/ketsu-github";
 import MarkdownIt from "markdown-it";
 
 const slug = Astro.params.slug;
