@@ -8,6 +8,7 @@
     "check": "astro check",
     "build": "astro build && pagefind --site .vercel/output/static",
     "preview": "astro preview",
+    "build:cf": "bash scripts/build-cf.sh",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
