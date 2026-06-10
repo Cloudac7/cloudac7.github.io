@@ -7,16 +7,19 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "astro build && pagefind --site .vercel/output/static",
-    "preview": "astro preview",
+    "preview": "npm run build && wrangler dev",
     "build:cf": "bash scripts/build-cf.sh",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
     "format": "biome format --write ./src",
-    "lint": "biome check --write ./src"
+    "lint": "biome check --write ./src",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
+    "@astrojs/cloudflare": "12",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/svelte": "7.2.3",
@@ -72,7 +75,8 @@
     "@types/mdast": "^4.0.4",
     "@types/sanitize-html": "^2.16.0",
     "postcss-import": "^16.1.1",
-    "postcss-nesting": "^13.0.2"
+    "postcss-nesting": "^13.0.2",
+    "wrangler": "^4.99.0"
   },
   "packageManager": "npm@10"
 }

@@ -8,3 +8,9 @@ Thumbs.db
 .obsidian
 .vercel
 .env
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
