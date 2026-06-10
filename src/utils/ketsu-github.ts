@@ -26,13 +26,8 @@ interface GitHubContent {
   encoding: string;
 }
 
-const _KETSU_REPO = import.meta.env.KETSU_REPO;
-const _GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
-
 function env(key: string): string | undefined {
-  if (key === "KETSU_REPO") return _KETSU_REPO;
-  if (key === "GITHUB_TOKEN") return _GITHUB_TOKEN;
-  return undefined;
+  return process.env[key];
 }
 
 function getRepo(): string {

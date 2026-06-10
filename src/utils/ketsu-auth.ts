@@ -1,10 +1,8 @@
 const COOKIE_NAME = "ketsu_auth";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-const _KETSU_PASSWORD = import.meta.env.KETSU_PASSWORD;
-
 export function env(key: string): string | undefined {
-  return key === "KETSU_PASSWORD" ? _KETSU_PASSWORD : undefined;
+  return process.env[key];
 }
 
 async function getExpectedHash(): Promise<string | null> {
