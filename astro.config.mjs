@@ -103,7 +103,9 @@ export default defineConfig({
 			}
 		}),
         svelte(),
-		sitemap(),
+		sitemap({
+				filter: (page) => !page.includes("/ketsu/"),
+			}),
 	],
 	markdown: {
 		remarkPlugins: [
