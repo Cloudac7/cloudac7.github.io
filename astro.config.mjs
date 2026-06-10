@@ -7,7 +7,7 @@ import swup from "@swup/astro";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
-import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
 import rehypeKatex from "rehype-katex";
@@ -28,7 +28,7 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://cloudac7.vercel.app/",
+	site: "https://cloudac7.tomori.xyz",
 	base: "/",
 	trailingSlash: "always",
 	output: "server",
@@ -174,5 +174,5 @@ export default defineConfig({
 			},
 		},
 	},
-	adapter: vercel(),
+	adapter: cloudflare(),
 });

@@ -1,6 +1,5 @@
 node_modules/
 dist/
-dist-cloudflare/
 .astro/
 *.log
 Thumbs.db

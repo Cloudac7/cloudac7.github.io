@@ -26,21 +26,13 @@ interface GitHubContent {
   encoding: string;
 }
 
-/**
- * Read env vars robustly across dev (Astro/Vite proxy) and prod (Vercel).
- *
- * In dev, Astro's Vite module runner wraps import.meta.env in a Proxy that
- * ONLY supports static access (import.meta.env.KEY) — dynamic access via
- * import.meta.env["KEY"] throws.  We use static top-level access here, then
- * fall back to process.env for Vercel production.
- */
-const _KETSU_REPO = "KETSU_REPO" in import.meta.env ? import.meta.env.KETSU_REPO : undefined;
-const _GITHUB_TOKEN = "GITHUB_TOKEN" in import.meta.env ? import.meta.env.GITHUB_TOKEN : undefined;
+const _KETSU_REPO = import.meta.env.KETSU_REPO;
+const _GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 
 function env(key: string): string | undefined {
-  if (key === "KETSU_REPO") return _KETSU_REPO ?? process.env.KETSU_REPO;
-  if (key === "GITHUB_TOKEN") return _GITHUB_TOKEN ?? process.env.GITHUB_TOKEN;
-  return process.env[key];
+  if (key === "KETSU_REPO") return _KETSU_REPO;
+  if (key === "GITHUB_TOKEN") return _GITHUB_TOKEN;
+  return undefined;
 }
 
 function getRepo(): string {

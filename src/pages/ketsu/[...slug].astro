@@ -26,7 +26,7 @@ if (slug === "logout") {
 }
 
 // --- Auth check ---
-if (!isAuthenticated(Astro.request)) {
+if (!await isAuthenticated(Astro.request)) {
   return Astro.redirect("/ketsu/", 302);
 }
 
