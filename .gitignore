@@ -1,6 +1,5 @@
 node_modules/
 dist/
-dist-worker/
 .astro/
 *.log
 Thumbs.db
